@@ -1,0 +1,33 @@
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Environment variables
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints
+
+# Model files (opsional — kalau model AI lo gede, jangan push ke git, biasanya pakai Git LFS atau taruh di storage terpisah)
+# *.pkl
+# *.joblib
+
+# OS
+.DS_Store
+Thumbs.db
