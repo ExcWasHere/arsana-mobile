@@ -16,7 +16,7 @@ class PinDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = hasError ? AppColors.error : AppColors.primaryTeal;
+    final color = hasError ? AppColors.error : AppColors.primary;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(length, (i) {
