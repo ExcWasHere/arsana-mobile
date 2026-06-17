@@ -82,7 +82,7 @@ class _BiometricSetupScreenState extends State<BiometricSetupScreen> {
                   color: AppColors.lightCyan,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.fingerprint, size: 56, color: AppColors.primaryTeal),
+                child: const Icon(Icons.fingerprint, size: 56, color: AppColors.primary),
               ),
               const SizedBox(height: 28),
               Text(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/google_logo.dart';
 import 'otp_screen.dart';
 
 enum LoginMethod { phone, email }
@@ -93,12 +94,12 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-                const Icon(Icons.hearing, size: 40, color: AppColors.primaryTeal),
+                const Icon(Icons.hearing, size: 40, color: AppColors.primary),
                 const SizedBox(height: 16),
                 Text('Selamat datang di Arsana', style: theme.textTheme.displaySmall),
                 const SizedBox(height: 6),
                 Text(
-                  'Masuk pakai nomor HP atau email kamu buat mulai belajar',
+                  'Masuk pakai nomor HP, email, atau akun Google kamu buat mulai belajar',
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 28),
@@ -117,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       _method == LoginMethod.phone
                           ? Icons.phone_outlined
                           : Icons.email_outlined,
-                      color: AppColors.primaryTeal,
+                      color: AppColors.primary,
                     ),
                   ),
                   validator: _validate,
@@ -150,9 +151,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 24),
                 OutlinedButton.icon(
                   onPressed: _isLoading ? null : _loginWithGoogle,
-                  // TODO: ganti icon ini pakai asset logo Google asli
-                  icon: const Icon(Icons.g_mobiledata, size: 26),
+                  icon: const GoogleLogo(size: 20),
                   label: const Text('Masuk dengan Google'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    side: BorderSide(color: AppColors.ink.withOpacity(0.15)),
+                    foregroundColor: AppColors.ink,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -198,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              color: selected ? AppColors.primaryTeal : AppColors.ink.withOpacity(0.5),
+              color: selected ? AppColors.primary : AppColors.ink.withOpacity(0.5),
             ),
           ),
         ),

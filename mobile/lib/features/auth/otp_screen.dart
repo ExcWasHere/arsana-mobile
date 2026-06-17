@@ -167,7 +167,7 @@ class _OtpScreenState extends State<OtpScreen> {
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(
-              color: _hasError ? AppColors.error : AppColors.primaryTeal.withOpacity(0.2),
+              color: _hasError ? AppColors.error : AppColors.primary.withOpacity(0.2),
             ),
           ),
           focusedBorder: OutlineInputBorder(

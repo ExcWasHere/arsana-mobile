@@ -68,7 +68,7 @@ class NumericKeypad extends StatelessWidget {
   Widget _buildIconKey(IconData icon, VoidCallback? onTap) {
     return _KeypadButton(
       onTap: onTap,
-      child: Icon(icon, color: AppColors.primaryTeal, size: 26),
+      child: Icon(icon, color: AppColors.primary, size: 26),
     );
   }
 }

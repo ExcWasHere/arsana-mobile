@@ -23,7 +23,7 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.celebration_outlined, size: 64, color: AppColors.primaryTeal),
+              const Icon(Icons.celebration_outlined, size: 64, color: AppColors.primary),
               const SizedBox(height: 16),
               Text('Selamat datang di Arsana!', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 24),

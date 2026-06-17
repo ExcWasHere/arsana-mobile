@@ -96,7 +96,7 @@ class _PinUnlockScreenState extends State<PinUnlockScreen> {
                   color: AppColors.lightCyan,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.hearing, color: AppColors.primaryTeal, size: 32),
+                child: const Icon(Icons.hearing, color: AppColors.primary, size: 32),
               ),
               const SizedBox(height: 20),
               Text('Masukkan PIN', style: theme.textTheme.displaySmall),
