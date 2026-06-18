@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/services/supabase_auth_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/google_logo.dart';
 import 'otp_screen.dart';
@@ -50,16 +52,16 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
+Future<void> _submit() async {
+  if (!_formKey.currentState!.validate()) return;
+  setState(() => _isLoading = true);
 
-    // TODO: panggil endpoint kirim OTP ke backend (Hono.js/Supabase) di sini
-    await Future.delayed(const Duration(milliseconds: 700));
-
-    setState(() => _isLoading = false);
+  try {
+    await SupabaseAuthService.instance.sendOtp(
+      identifier: _inputController.text.trim(),
+      isPhone: _method == LoginMethod.phone,
+    );
     if (!mounted) return;
-
     Navigator.of(context).pushNamed(
       OtpScreen.routeName,
       arguments: OtpScreenArgs(
@@ -67,7 +69,12 @@ class _LoginScreenState extends State<LoginScreen> {
         method: _method,
       ),
     );
+  } on AuthException catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
   }
+}
 
   Future<void> _loginWithGoogle() async {
     setState(() => _isLoading = true);

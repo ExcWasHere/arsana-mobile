@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/theme/app_colors.dart';
 import 'features/splash/splash_screen.dart';
 import 'features/auth/login_screen.dart';
@@ -10,9 +11,21 @@ import 'features/auth/biometric_setup_screen.dart';
 import 'features/auth/pin_unlock_screen.dart';
 import 'features/home/home_screen.dart';
 
+const _supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+const _supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
+
+  assert(
+    _supabaseUrl.isNotEmpty && _supabaseAnonKey.isNotEmpty,
+  );
+
+  await Supabase.initialize(
+    url: _supabaseUrl,
+    anonKey: _supabaseAnonKey,
+  );
   runApp(const ArsanaApp());
 }
 
