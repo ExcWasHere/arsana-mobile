@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/services/auth_storage_service.dart';
+import '../../core/services/api_client.dart';
 import 'pin_setup_screen.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
@@ -58,14 +59,28 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
     setState(() => _isLoading = true);
 
-    // TODO: kirim data profil (nama, tgl lahir, kota, sekolah) ke backend
-    await Future.delayed(const Duration(milliseconds: 600));
-    await AuthStorageService.instance.setProfileComplete(true);
+    try {
+      final response = await ApiClient.instance.post('/profile', {
+        'fullName': _nameController.text.trim(),
+        'birthDate': _birthDate!.toIso8601String(),
+        'city': _cityController.text.trim(),
+        'school': _schoolController.text.trim(),
+      });
 
-    setState(() => _isLoading = false);
-    if (!mounted) return;
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal simpan profil, coba lagi ya')),
+        );
+        return;
+      }
 
-    Navigator.of(context).pushReplacementNamed(PinSetupScreen.routeName);
+      await AuthStorageService.instance.setProfileComplete(true);
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed(PinSetupScreen.routeName);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override

@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import 'login_screen.dart';
 import 'profile_setup_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/services/supabase_auth_service.dart';
+import '../home/home_screen.dart';
 
 class OtpScreenArgs {
   final String identifier;
@@ -73,26 +76,33 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   Future<void> _verify() async {
-    setState(() => _isLoading = true);
+  setState(() => _isLoading = true);
 
-    // TODO: kirim _code ke backend buat diverifikasi beneran
-    await Future.delayed(const Duration(milliseconds: 700));
-    const dummyValidOtp = '123456'; // sementara buat testing UI
+  try {
+    await SupabaseAuthService.instance.verifyOtp(
+      identifier: widget.args.identifier,
+      isPhone: widget.args.method == LoginMethod.phone,
+      token: _code,
+    );
 
-    setState(() => _isLoading = false);
-
-    if (_code != dummyValidOtp) {
-      setState(() => _hasError = true);
-      for (final c in _controllers) {
-        c.clear();
-      }
-      _focusNodes[0].requestFocus();
-      return;
-    }
-
+    final alreadyHasProfile = await SupabaseAuthService.instance.hasProfile();
     if (!mounted) return;
-    Navigator.of(context).pushReplacementNamed(ProfileSetupScreen.routeName);
+
+    if (alreadyHasProfile) {
+      Navigator.of(context).pushNamedAndRemoveUntil(HomeScreen.routeName, (route) => false);
+    } else {
+      Navigator.of(context).pushReplacementNamed(ProfileSetupScreen.routeName);
+    }
+  } on AuthException catch (_) {
+    setState(() => _hasError = true);
+    for (final c in _controllers) {
+      c.clear();
+    }
+    _focusNodes[0].requestFocus();
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
   }
+}
 
   void _resend() {
     if (_secondsLeft > 0) return;
