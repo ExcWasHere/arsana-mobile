@@ -1,5 +1,5 @@
 import { Context, type Next } from 'hono';
-import { supabaseAdmin } from '../lib/supabase.js';
+import { makeSupabaseAdmin } from '../lib/supabase.js';
 
 export async function requireAuth(c: Context, next: Next) {
   const authHeader = c.req.header('Authorization');
@@ -7,7 +7,8 @@ export async function requireAuth(c: Context, next: Next) {
     return c.json({ error: 'Unauthorized' }, 401);
   }
   const token = authHeader.replace('Bearer ', '');
-  const { data, error } = await supabaseAdmin.auth.getUser(token);
+  const supabase = makeSupabaseAdmin(c.env as any);
+  const { data, error } = await supabase.auth.getUser(token);
   if (error || !data.user) {
     return c.json({ error: 'Unauthorized' }, 401);
   }

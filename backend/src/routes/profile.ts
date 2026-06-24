@@ -1,14 +1,20 @@
 import { Hono } from 'hono';
 import { requireAuth } from '../middleware/auth.js';
-import { supabaseAdmin } from '../lib/supabase.js';
+import { makeSupabaseAdmin } from '../lib/supabase.js';
 
-const profile = new Hono<{ Variables: { userId: string } }>();
+type Bindings = {
+  SUPABASE_URL: string;
+  SUPABASE_SERVICE_ROLE_KEY: string;
+};
+
+const profile = new Hono<{ Bindings: Bindings; Variables: { userId: string } }>();
 
 profile.post('/', requireAuth, async (c) => {
   const userId = c.get('userId');
   const body = await c.req.json();
+  const supabase = makeSupabaseAdmin(c.env);
 
-  const { error } = await supabaseAdmin.from('profiles').upsert({
+  const { error } = await supabase.from('profiles').upsert({
     id: userId,
     full_name: body.fullName,
     birth_date: body.birthDate,
@@ -21,8 +27,10 @@ profile.post('/', requireAuth, async (c) => {
 });
 
 profile.get('/me', requireAuth, async (c) => {
-  const userId = c.get('userId') as string;
-  const { data, error } = await supabaseAdmin
+  const userId = c.get('userId');
+  const supabase = makeSupabaseAdmin(c.env);
+
+  const { data, error } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', userId)
