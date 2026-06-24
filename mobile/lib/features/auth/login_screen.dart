@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/services/supabase_auth_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/google_logo.dart';
+import '../home/home_screen.dart';
+import 'profile_setup_screen.dart';
 import 'otp_screen.dart';
 
 enum LoginMethod { phone, email }
@@ -22,8 +26,47 @@ class _LoginScreenState extends State<LoginScreen> {
   final _inputController = TextEditingController();
   bool _isLoading = false;
 
+  // Flag ini biar listener cuma bereaksi waktu Google OAuth yang diinisiasi
+  // dari screen ini (bukan signedIn dari OTP atau session restore)
+  bool _googleAuthInProgress = false;
+  late final StreamSubscription<AuthState> _authSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen(
+      _onAuthStateChange,
+    );
+  }
+
+  Future<void> _onAuthStateChange(AuthState data) async {
+    if (data.event != AuthChangeEvent.signedIn) return;
+    if (!_googleAuthInProgress) return;
+    _googleAuthInProgress = false;
+
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    try {
+      final hasProfile = await SupabaseAuthService.instance.hasProfile();
+      if (!mounted) return;
+      if (hasProfile) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          HomeScreen.routeName,
+          (_) => false,
+        );
+      } else {
+        Navigator.of(context).pushReplacementNamed(
+          ProfileSetupScreen.routeName,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   void dispose() {
+    _authSub.cancel();
     _inputController.dispose();
     super.dispose();
   }
@@ -44,48 +87,82 @@ class _LoginScreenState extends State<LoginScreen> {
     }
     if (_method == LoginMethod.email) {
       final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-      if (!emailRegex.hasMatch(value.trim())) return 'Format email belum bener';
+      if (!emailRegex.hasMatch(value.trim())) {
+        return 'Format email belum bener';
+      }
     } else {
       final phoneRegex = RegExp(r'^[0-9+]{9,15}$');
-      if (!phoneRegex.hasMatch(value.trim())) return 'Format nomor HP belum bener';
+      if (!phoneRegex.hasMatch(value.trim())) {
+        return 'Format nomor HP belum bener';
+      }
     }
     return null;
   }
 
-Future<void> _submit() async {
-  if (!_formKey.currentState!.validate()) return;
-  setState(() => _isLoading = true);
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
 
-  try {
-    await SupabaseAuthService.instance.sendOtp(
-      identifier: _inputController.text.trim(),
-      isPhone: _method == LoginMethod.phone,
-    );
-    if (!mounted) return;
-    Navigator.of(context).pushNamed(
-      OtpScreen.routeName,
-      arguments: OtpScreenArgs(
+    try {
+      await SupabaseAuthService.instance.sendOtp(
         identifier: _inputController.text.trim(),
-        method: _method,
-      ),
-    );
-  } on AuthException catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
-  } finally {
-    if (mounted) setState(() => _isLoading = false);
+        isPhone: _method == LoginMethod.phone,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pushNamed(
+        OtpScreen.routeName,
+        arguments: OtpScreenArgs(
+          identifier: _inputController.text.trim(),
+          method: _method,
+        ),
+      );
+    } on AuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
-}
 
   Future<void> _loginWithGoogle() async {
-    setState(() => _isLoading = true);
-    // TODO: integrasi package google_sign_in beneran,
-    // lalu kirim id token ke backend buat ditukar jadi session
-    await Future.delayed(const Duration(milliseconds: 700));
-    setState(() => _isLoading = false);
-    if (!mounted) return;
-
-    // asumsi: user baru -> lanjut isi profil
-    Navigator.of(context).pushNamed('/profile-setup');
+    setState(() {
+      _isLoading = true;
+      _googleAuthInProgress = true;
+    });
+    try {
+      final launched = await SupabaseAuthService.instance.signInWithGoogle();
+      if (!launched) {
+        _googleAuthInProgress = false;
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Gagal membuka halaman Google Sign In')),
+          );
+        }
+      }
+      // Kalau launched = true, user lagi di browser
+      // Navigasi akan ditangani _onAuthStateChange setelah deep link balik
+    } on AuthException catch (e) {
+      _googleAuthInProgress = false;
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } catch (_) {
+      _googleAuthInProgress = false;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Gagal masuk dengan Google, coba lagi ya')),
+        );
+      }
+    } finally {
+      // Loading tetap true kalau launched berhasil — akan di-clear di _onAuthStateChange
+      if (mounted && !_googleAuthInProgress) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -103,7 +180,10 @@ Future<void> _submit() async {
                 const SizedBox(height: 20),
                 const Icon(Icons.hearing, size: 40, color: AppColors.primary),
                 const SizedBox(height: 16),
-                Text('Selamat datang di Arsana', style: theme.textTheme.displaySmall),
+                Text(
+                  'Selamat datang di Arsana',
+                  style: theme.textTheme.displaySmall,
+                ),
                 const SizedBox(height: 6),
                 Text(
                   'Masuk pakai nomor HP, email, atau akun Google kamu buat mulai belajar',
@@ -147,12 +227,16 @@ Future<void> _submit() async {
                 const SizedBox(height: 24),
                 Row(
                   children: [
-                    Expanded(child: Divider(color: AppColors.ink.withOpacity(0.15))),
+                    Expanded(
+                        child: Divider(
+                            color: AppColors.ink.withValues(alpha: 0.15))),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Text('atau', style: theme.textTheme.bodyMedium),
                     ),
-                    Expanded(child: Divider(color: AppColors.ink.withOpacity(0.15))),
+                    Expanded(
+                        child: Divider(
+                            color: AppColors.ink.withValues(alpha: 0.15))),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -162,7 +246,8 @@ Future<void> _submit() async {
                   label: const Text('Masuk dengan Google'),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(50),
-                    side: BorderSide(color: AppColors.ink.withOpacity(0.15)),
+                    side: BorderSide(
+                        color: AppColors.ink.withValues(alpha: 0.15)),
                     foregroundColor: AppColors.ink,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -205,7 +290,11 @@ Future<void> _submit() async {
             color: selected ? AppColors.white : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             boxShadow: selected
-                ? [BoxShadow(color: AppColors.ink.withOpacity(0.08), blurRadius: 8)]
+                ? [
+                    BoxShadow(
+                        color: AppColors.ink.withValues(alpha: 0.08),
+                        blurRadius: 8)
+                  ]
                 : null,
           ),
           child: Text(
@@ -213,7 +302,9 @@ Future<void> _submit() async {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              color: selected ? AppColors.primary : AppColors.ink.withOpacity(0.5),
+              color: selected
+                  ? AppColors.primary
+                  : AppColors.ink.withValues(alpha: 0.5),
             ),
           ),
         ),

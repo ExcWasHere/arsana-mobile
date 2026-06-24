@@ -13,7 +13,10 @@ class SupabaseAuthService {
     return '+$digits';
   }
 
-  Future<void> sendOtp({required String identifier, required bool isPhone}) async {
+  Future<void> sendOtp({
+    required String identifier,
+    required bool isPhone,
+  }) async {
     if (isPhone) {
       await _client.auth.signInWithOtp(phone: _toE164(identifier));
     } else {
@@ -40,10 +43,24 @@ class SupabaseAuthService {
     );
   }
 
+  /// Login Google via Supabase OAuth — buka browser, redirect ke supabase.co/google,
+  /// lalu balik ke app lewat deep link arsana://login-callback.
+  /// Return true kalau browser berhasil diluncurkan.
+  Future<bool> signInWithGoogle() async {
+    return await _client.auth.signInWithOAuth(
+      OAuthProvider.google,
+      redirectTo: 'arsana://login-callback',
+    );
+  }
+
   Future<bool> hasProfile() async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) return false;
-    final row = await _client.from('profiles').select('id').eq('id', userId).maybeSingle();
+    final row = await _client
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle();
     return row != null;
   }
 
