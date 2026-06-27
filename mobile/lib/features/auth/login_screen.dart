@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/services/supabase_auth_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/app_background.dart';
 import '../../core/widgets/google_logo.dart';
 import '../home/home_screen.dart';
 import 'profile_setup_screen.dart';
@@ -26,8 +27,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _inputController = TextEditingController();
   bool _isLoading = false;
 
-  // Flag ini biar listener cuma bereaksi waktu Google OAuth yang diinisiasi
-  // dari screen ini (bukan signedIn dari OTP atau session restore)
   bool _googleAuthInProgress = false;
   late final StreamSubscription<AuthState> _authSub;
 
@@ -141,8 +140,6 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       }
-      // Kalau launched = true, user lagi di browser
-      // Navigasi akan ditangani _onAuthStateChange setelah deep link balik
     } on AuthException catch (e) {
       _googleAuthInProgress = false;
       if (mounted) {
@@ -158,7 +155,6 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } finally {
-      // Loading tetap true kalau launched berhasil — akan di-clear di _onAuthStateChange
       if (mounted && !_googleAuthInProgress) {
         setState(() => _isLoading = false);
       }
@@ -169,92 +165,94 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                const Icon(Icons.hearing, size: 40, color: AppColors.primary),
-                const SizedBox(height: 16),
-                Text(
-                  'Selamat datang di Arsana',
-                  style: theme.textTheme.displaySmall,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Masuk pakai nomor HP, email, atau akun Google kamu buat mulai belajar',
-                  style: theme.textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 28),
-                _buildMethodSwitch(),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _inputController,
-                  keyboardType: _method == LoginMethod.phone
-                      ? TextInputType.phone
-                      : TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    hintText: _method == LoginMethod.phone
-                        ? '08xxxxxxxxxx'
-                        : 'nama@email.com',
-                    prefixIcon: Icon(
-                      _method == LoginMethod.phone
-                          ? Icons.phone_outlined
-                          : Icons.email_outlined,
-                      color: AppColors.primary,
+      body: AppBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  const Icon(Icons.hearing, size: 40, color: AppColors.primary),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Selamat datang di Arsana',
+                    style: theme.textTheme.displaySmall,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Masuk pakai nomor HP, email, atau akun Google kamu buat mulai belajar',
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 28),
+                  _buildMethodSwitch(),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: _inputController,
+                    keyboardType: _method == LoginMethod.phone
+                        ? TextInputType.phone
+                        : TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      hintText: _method == LoginMethod.phone
+                          ? '08xxxxxxxxxx'
+                          : 'nama@email.com',
+                      prefixIcon: Icon(
+                        _method == LoginMethod.phone
+                            ? Icons.phone_outlined
+                            : Icons.email_outlined,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    validator: _validate,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : _submit,
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.4,
+                              color: AppColors.white,
+                            ),
+                          )
+                        : const Text('Lanjut'),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: Divider(
+                              color: AppColors.ink.withValues(alpha: 0.15))),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('atau', style: theme.textTheme.bodyMedium),
+                      ),
+                      Expanded(
+                          child: Divider(
+                              color: AppColors.ink.withValues(alpha: 0.15))),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  OutlinedButton.icon(
+                    onPressed: _isLoading ? null : _loginWithGoogle,
+                    icon: const GoogleLogo(size: 20),
+                    label: const Text('Masuk dengan Google'),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                      side: BorderSide(
+                          color: AppColors.ink.withValues(alpha: 0.15)),
+                      foregroundColor: AppColors.ink,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
-                  validator: _validate,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _submit,
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.4,
-                            color: AppColors.white,
-                          ),
-                        )
-                      : const Text('Lanjut'),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                        child: Divider(
-                            color: AppColors.ink.withValues(alpha: 0.15))),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Text('atau', style: theme.textTheme.bodyMedium),
-                    ),
-                    Expanded(
-                        child: Divider(
-                            color: AppColors.ink.withValues(alpha: 0.15))),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                OutlinedButton.icon(
-                  onPressed: _isLoading ? null : _loginWithGoogle,
-                  icon: const GoogleLogo(size: 20),
-                  label: const Text('Masuk dengan Google'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(50),
-                    side: BorderSide(
-                        color: AppColors.ink.withValues(alpha: 0.15)),
-                    foregroundColor: AppColors.ink,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

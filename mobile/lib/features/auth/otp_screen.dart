@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/app_background.dart';
 import 'login_screen.dart';
 import 'profile_setup_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -76,37 +77,36 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   Future<void> _verify() async {
-  setState(() => _isLoading = true);
+    setState(() => _isLoading = true);
 
-  try {
-    await SupabaseAuthService.instance.verifyOtp(
-      identifier: widget.args.identifier,
-      isPhone: widget.args.method == LoginMethod.phone,
-      token: _code,
-    );
+    try {
+      await SupabaseAuthService.instance.verifyOtp(
+        identifier: widget.args.identifier,
+        isPhone: widget.args.method == LoginMethod.phone,
+        token: _code,
+      );
 
-    final alreadyHasProfile = await SupabaseAuthService.instance.hasProfile();
-    if (!mounted) return;
+      final alreadyHasProfile = await SupabaseAuthService.instance.hasProfile();
+      if (!mounted) return;
 
-    if (alreadyHasProfile) {
-      Navigator.of(context).pushNamedAndRemoveUntil(HomeScreen.routeName, (route) => false);
-    } else {
-      Navigator.of(context).pushReplacementNamed(ProfileSetupScreen.routeName);
+      if (alreadyHasProfile) {
+        Navigator.of(context).pushNamedAndRemoveUntil(HomeScreen.routeName, (route) => false);
+      } else {
+        Navigator.of(context).pushReplacementNamed(ProfileSetupScreen.routeName);
+      }
+    } on AuthException catch (_) {
+      setState(() => _hasError = true);
+      for (final c in _controllers) {
+        c.clear();
+      }
+      _focusNodes[0].requestFocus();
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-  } on AuthException catch (_) {
-    setState(() => _hasError = true);
-    for (final c in _controllers) {
-      c.clear();
-    }
-    _focusNodes[0].requestFocus();
-  } finally {
-    if (mounted) setState(() => _isLoading = false);
   }
-}
 
   void _resend() {
     if (_secondsLeft > 0) return;
-    // TODO: panggil ulang endpoint kirim OTP
     _startTimer();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Kode OTP baru sudah dikirim')),
@@ -118,41 +118,43 @@ class _OtpScreenState extends State<OtpScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Verifikasi kode', style: theme.textTheme.displaySmall),
-              const SizedBox(height: 8),
-              Text(
-                'Masukkan 6 digit kode yang dikirim ke ${widget.args.identifier}',
-                style: theme.textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(6, (i) => _buildOtpBox(i)),
-              ),
-              if (_hasError) ...[
+      body: AppBackground(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Verifikasi kode', style: theme.textTheme.displaySmall),
+                const SizedBox(height: 8),
+                Text(
+                  'Masukkan 6 digit kode yang dikirim ke ${widget.args.identifier}',
+                  style: theme.textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(6, (i) => _buildOtpBox(i)),
+                ),
+                if (_hasError) ...[
+                  const SizedBox(height: 12),
+                  const Text('Kode salah, coba lagi ya', style: TextStyle(color: AppColors.error)),
+                ],
+                const SizedBox(height: 28),
+                if (_isLoading) const Center(child: CircularProgressIndicator()),
                 const SizedBox(height: 12),
-                const Text('Kode salah, coba lagi ya', style: TextStyle(color: AppColors.error)),
-              ],
-              const SizedBox(height: 28),
-              if (_isLoading) const Center(child: CircularProgressIndicator()),
-              const SizedBox(height: 12),
-              Center(
-                child: TextButton(
-                  onPressed: _secondsLeft == 0 ? _resend : null,
-                  child: Text(
-                    _secondsLeft == 0
-                        ? 'Kirim ulang kode'
-                        : 'Kirim ulang dalam $_secondsLeft d',
+                Center(
+                  child: TextButton(
+                    onPressed: _secondsLeft == 0 ? _resend : null,
+                    child: Text(
+                      _secondsLeft == 0
+                          ? 'Kirim ulang kode'
+                          : 'Kirim ulang dalam $_secondsLeft d',
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

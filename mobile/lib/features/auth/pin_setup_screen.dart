@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/services/auth_storage_service.dart';
+import '../../core/widgets/app_background.dart';
 import '../../core/widgets/numeric_keypad.dart';
 import '../../core/widgets/pin_dots.dart';
 import 'biometric_setup_screen.dart';
@@ -79,35 +80,37 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
               )
             : null,
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
-          child: Column(
-            children: [
-              const SizedBox(height: 12),
-              Text(
-                _isConfirmStep ? 'Konfirmasi PIN kamu' : 'Buat PIN baru',
-                style: theme.textTheme.displaySmall,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _isConfirmStep
-                    ? 'Masukkan ulang PIN yang sama'
-                    : 'PIN ini dipakai buat login berikutnya',
-                style: theme.textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 36),
-              PinDots(length: _pinLength, filled: _currentInput.length, hasError: _hasError),
-              if (_hasError) ...[
+      body: AppBackground(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Column(
+              children: [
                 const SizedBox(height: 12),
-                const Text('PIN tidak sama, coba lagi', style: TextStyle(color: AppColors.error)),
+                Text(
+                  _isConfirmStep ? 'Konfirmasi PIN kamu' : 'Buat PIN baru',
+                  style: theme.textTheme.displaySmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _isConfirmStep
+                      ? 'Masukkan ulang PIN yang sama'
+                      : 'PIN ini dipakai buat login berikutnya',
+                  style: theme.textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 36),
+                PinDots(length: _pinLength, filled: _currentInput.length, hasError: _hasError),
+                if (_hasError) ...[
+                  const SizedBox(height: 12),
+                  const Text('PIN tidak sama, coba lagi', style: TextStyle(color: AppColors.error)),
+                ],
+                const Spacer(),
+                NumericKeypad(onKeyTap: _onKeyTap, onBackspace: _onBackspace),
+                const SizedBox(height: 24),
               ],
-              const Spacer(),
-              NumericKeypad(onKeyTap: _onKeyTap, onBackspace: _onBackspace),
-              const SizedBox(height: 24),
-            ],
+            ),
           ),
         ),
       ),
