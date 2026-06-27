@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/services/auth_storage_service.dart';
+import '../../core/widgets/app_background.dart';
 import '../../core/widgets/numeric_keypad.dart';
 import '../../core/widgets/pin_dots.dart';
 import '../home/home_screen.dart';
@@ -44,7 +45,6 @@ class _PinUnlockScreenState extends State<PinUnlockScreen> {
       );
       if (didAuthenticate) _goHome();
     } catch (_) {
-      // user batal atau error -> biarin dia masukin PIN manual
     }
   }
 
@@ -83,38 +83,40 @@ class _PinUnlockScreenState extends State<PinUnlockScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
-          child: Column(
-            children: [
-              const SizedBox(height: 48),
-              Container(
-                width: 72,
-                height: 72,
-                decoration: const BoxDecoration(
-                  color: AppColors.lightCyan,
-                  shape: BoxShape.circle,
+      body: AppBackground(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Column(
+              children: [
+                const SizedBox(height: 48),
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: const BoxDecoration(
+                    color: AppColors.lightCyan,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.hearing, color: AppColors.primary, size: 32),
                 ),
-                child: const Icon(Icons.hearing, color: AppColors.primary, size: 32),
-              ),
-              const SizedBox(height: 20),
-              Text('Masukkan PIN', style: theme.textTheme.displaySmall),
-              const SizedBox(height: 28),
-              PinDots(length: _pinLength, filled: _input.length, hasError: _hasError),
-              if (_hasError) ...[
-                const SizedBox(height: 12),
-                const Text('PIN salah, coba lagi', style: TextStyle(color: AppColors.error)),
+                const SizedBox(height: 20),
+                Text('Masukkan PIN', style: theme.textTheme.displaySmall),
+                const SizedBox(height: 28),
+                PinDots(length: _pinLength, filled: _input.length, hasError: _hasError),
+                if (_hasError) ...[
+                  const SizedBox(height: 12),
+                  const Text('PIN salah, coba lagi', style: TextStyle(color: AppColors.error)),
+                ],
+                const Spacer(),
+                NumericKeypad(
+                  onKeyTap: _onKeyTap,
+                  onBackspace: _onBackspace,
+                  showBiometric: _biometricEnabled,
+                  onBiometricTap: _tryBiometric,
+                ),
+                const SizedBox(height: 24),
               ],
-              const Spacer(),
-              NumericKeypad(
-                onKeyTap: _onKeyTap,
-                onBackspace: _onBackspace,
-                showBiometric: _biometricEnabled,
-                onBiometricTap: _tryBiometric,
-              ),
-              const SizedBox(height: 24),
-            ],
+            ),
           ),
         ),
       ),

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/services/auth_storage_service.dart';
+import '../../core/widgets/app_background.dart';
 import '../auth/login_screen.dart';
 import '../auth/pin_unlock_screen.dart';
 
@@ -71,37 +72,39 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      body: Center(
-        child: AnimatedBuilder(
-          animation: Listenable.merge([_controller, _exitController]),
-          builder: (context, child) {
-            return Opacity(
-              opacity: _fade.value * (1 - _exitFade.value),
-              child: Transform.rotate(
-                angle: _rotation.value,
-                child: Container(
-                  width: 200,
-                  height: 200,
-                  padding: const EdgeInsets.all(28),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(40),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withOpacity(0.25),
-                        blurRadius: 28,
-                        spreadRadius: 4,
-                      ),
-                    ],
-                  ),
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    fit: BoxFit.contain,
+      body: AppBackground(
+        child: Center(
+          child: AnimatedBuilder(
+            animation: Listenable.merge([_controller, _exitController]),
+            builder: (context, child) {
+              return Opacity(
+                opacity: _fade.value * (1 - _exitFade.value),
+                child: Transform.rotate(
+                  angle: _rotation.value,
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(40),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.25),
+                          blurRadius: 28,
+                          spreadRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

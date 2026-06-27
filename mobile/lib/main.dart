@@ -48,7 +48,6 @@ class ArsanaApp extends StatelessWidget {
         PinUnlockScreen.routeName: (_) => const PinUnlockScreen(),
         HomeScreen.routeName: (_) => const HomeScreen(),
       },
-      // OtpScreen butuh argumen, jadi ditangani manual lewat onGenerateRoute
       onGenerateRoute: (settings) {
         if (settings.name == OtpScreen.routeName) {
           final args = settings.arguments as OtpScreenArgs;
