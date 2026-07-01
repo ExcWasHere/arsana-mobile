@@ -43,9 +43,6 @@ class SupabaseAuthService {
     );
   }
 
-  /// Login Google via Supabase OAuth — buka browser, redirect ke supabase.co/google,
-  /// lalu balik ke app lewat deep link arsana://login-callback.
-  /// Return true kalau browser berhasil diluncurkan.
   Future<bool> signInWithGoogle() async {
     return await _client.auth.signInWithOAuth(
       OAuthProvider.google,
