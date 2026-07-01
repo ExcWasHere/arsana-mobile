@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/app_background.dart';
+import '../pages/materi_belajar_page.dart';
 
 class BerandaPage extends StatefulWidget {
   final VoidCallback onLogout;
@@ -37,10 +38,11 @@ class _BerandaPageState extends State<BerandaPage> {
   static const _features = [
     _FeatureData(
       emoji: '📚',
-      title: 'Layar Ilmu',
+      title: 'Materi Belajar',
       subtitle: 'Materi belajar & video pembelajaran',
       colors: [Color(0xFF06B6D4), Color(0xFF14B8A6)],
       tags: ['Video', 'Interaktif'],
+      route: _FeatureRoute.materiBelajar,
     ),
     _FeatureData(
       emoji: '🎮',
@@ -48,6 +50,7 @@ class _BerandaPageState extends State<BerandaPage> {
       subtitle: 'Kuis & latihan soal seru',
       colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
       tags: ['Kuis', 'Tantangan'],
+      route: _FeatureRoute.none,
     ),
     _FeatureData(
       emoji: '✋',
@@ -55,6 +58,7 @@ class _BerandaPageState extends State<BerandaPage> {
       subtitle: 'Praktik gerakan isyarat & validasi kamera AI',
       colors: [Color(0xFF14B8A6), Color(0xFF0D9488)],
       tags: ['4 level', 'AI'],
+      route: _FeatureRoute.none,
     ),
     _FeatureData(
       emoji: '🤟',
@@ -62,20 +66,13 @@ class _BerandaPageState extends State<BerandaPage> {
       subtitle: 'Teks ke animasi isyarat SIBI instan & real-time',
       colors: [Color(0xFFA855F7), Color(0xFF7C3AED)],
       tags: ['SIBI', 'Real-time'],
+      route: _FeatureRoute.none,
     ),
   ];
 
   static const _recentLessons = [
-    _LessonData(
-      subject: 'Matematika',
-      topic: 'Penjumlahan 1-10',
-      done: true,
-    ),
-    _LessonData(
-      subject: 'IPA',
-      topic: 'Ekosistem Hutan',
-      done: true,
-    ),
+    _LessonData(subject: 'Matematika', topic: 'Penjumlahan 1-10', done: true),
+    _LessonData(subject: 'IPA', topic: 'Ekosistem Hutan', done: true),
     _LessonData(
       subject: 'Bahasa Indonesia',
       topic: 'Membaca Pemahaman',
@@ -83,37 +80,52 @@ class _BerandaPageState extends State<BerandaPage> {
     ),
   ];
 
+  void _handleFeatureTap(_FeatureRoute route) {
+    switch (route) {
+      case _FeatureRoute.materiBelajar:
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const MateriBelajarPage()),
+        );
+        break;
+      case _FeatureRoute.none:
+        // TODO: navigasi fitur lain (Arena Pintar, Gesture Match, Sign Translate)
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.mist,
-      body: CustomScrollView(
-        slivers: [
-          _buildAppBar(),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                _buildStreakCard(),
-                const SizedBox(height: 20),
-                _buildSectionLabel('Fitur Utama'),
-                const SizedBox(height: 12),
-                _buildFeatureGrid(),
-                const SizedBox(height: 20),
-                _buildSectionLabel('Pelajaran Terakhir'),
-                const SizedBox(height: 12),
-                _buildRecentLessons(),
-              ]),
+    return AppBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: CustomScrollView(
+          slivers: [
+            _buildAppBar(),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  _buildStreakCard(),
+                  const SizedBox(height: 20),
+                  _buildSectionLabel('Fitur Utama'),
+                  const SizedBox(height: 12),
+                  _buildFeatureGrid(),
+                  const SizedBox(height: 20),
+                  _buildSectionLabel('Pelajaran Terakhir'),
+                  const SizedBox(height: 12),
+                  _buildRecentLessons(),
+                ]),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildAppBar() {
     return SliverAppBar(
-      backgroundColor: AppColors.mist,
+      backgroundColor: Colors.transparent,
       elevation: 0,
       pinned: false,
       floating: true,
@@ -136,9 +148,7 @@ class _BerandaPageState extends State<BerandaPage> {
                 ),
                 child: Center(
                   child: Text(
-                    _userName.isNotEmpty
-                        ? _userName[0].toUpperCase()
-                        : 'A',
+                    _userName.isNotEmpty ? _userName[0].toUpperCase() : 'A',
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w900,
@@ -163,10 +173,7 @@ class _BerandaPageState extends State<BerandaPage> {
                     ),
                     const Text(
                       'Semangat belajar hari ini!',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF64748B),
-                      ),
+                      style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                     ),
                   ],
                 ),
@@ -223,10 +230,7 @@ class _BerandaPageState extends State<BerandaPage> {
                 SizedBox(height: 4),
                 Text(
                   'Pertahankan semangat belajarmu!',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
               ],
             ),
@@ -277,15 +281,13 @@ class _BerandaPageState extends State<BerandaPage> {
 
   Widget _buildFeatureCard(_FeatureData f) {
     return GestureDetector(
-      onTap: () {
-        // TODO: navigasi ke halaman fitur
-      },
+      onTap: () => _handleFeatureTap(f.route),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFcffafe)), // cyan-100
+          border: Border.all(color: const Color(0xFFcffafe)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.04),
@@ -386,9 +388,7 @@ class _BerandaPageState extends State<BerandaPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  lesson.done
-                      ? Icons.check_rounded
-                      : Icons.play_arrow_rounded,
+                  lesson.done ? Icons.check_rounded : Icons.play_arrow_rounded,
                   color: Colors.white,
                   size: 20,
                 ),
@@ -434,12 +434,15 @@ class _BerandaPageState extends State<BerandaPage> {
   }
 }
 
+enum _FeatureRoute { materiBelajar, none }
+
 class _FeatureData {
   final String emoji;
   final String title;
   final String subtitle;
   final List<Color> colors;
   final List<String> tags;
+  final _FeatureRoute route;
 
   const _FeatureData({
     required this.emoji,
@@ -447,6 +450,7 @@ class _FeatureData {
     required this.subtitle,
     required this.colors,
     required this.tags,
+    required this.route,
   });
 }
 

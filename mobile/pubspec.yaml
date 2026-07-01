@@ -34,6 +34,7 @@ dependencies:
   flutter_svg: ^2.0.10+1
   flutter_secure_storage: ^9.2.2
   local_auth: ^2.3.0
+  video_player: ^2.11.1
   intl: ^0.19.0
   flutter:
     sdk: flutter
@@ -76,6 +77,7 @@ flutter:
     - assets/images/logo.png
     - assets/images/latar-belakang.svg
     - assets/images/icon.png
+    - assets/videos/NIZAM.mp4
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

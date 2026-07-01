@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum AppPage { beranda, layarIlmu, arena, lencana }
+enum AppPage { beranda, materiBelajar, arena, lencana }
 class AppBottomNavBar extends StatelessWidget {
   final AppPage currentPage;
   final ValueChanged<AppPage> onNavigate;
@@ -18,8 +18,8 @@ class AppBottomNavBar extends StatelessWidget {
       icon: Icons.home_rounded,
     ),
     _NavTab(
-      page: AppPage.layarIlmu,
-      label: 'Layar Ilmu',
+      page: AppPage.materiBelajar,
+      label: 'Materi Belajar',
       icon: Icons.menu_book_rounded,
     ),
     _NavTab(
