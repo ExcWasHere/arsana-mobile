@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-enum AppPage { beranda, materiBelajar, arena, lencana }
+enum AppPage { beranda, materiBelajar, chatbot, forumKelas, lencana }
+
 class AppBottomNavBar extends StatelessWidget {
   final AppPage currentPage;
   final ValueChanged<AppPage> onNavigate;
@@ -23,9 +24,14 @@ class AppBottomNavBar extends StatelessWidget {
       icon: Icons.menu_book_rounded,
     ),
     _NavTab(
-      page: AppPage.arena,
-      label: 'Arena',
-      icon: Icons.sports_esports_rounded,
+      page: AppPage.chatbot,
+      label: 'Chatbot',
+      icon: Icons.smart_toy_rounded,
+    ),
+    _NavTab(
+      page: AppPage.forumKelas,
+      label: 'Forum Kelas',
+      icon: Icons.forum_rounded,
     ),
     _NavTab(
       page: AppPage.lencana,
@@ -33,6 +39,7 @@ class AppBottomNavBar extends StatelessWidget {
       icon: Icons.emoji_events_rounded,
     ),
   ];
+
   static const _activeGradient = LinearGradient(
     colors: [Color(0xFF06B6D4), Color(0xFF14B8A6)],
   );
@@ -58,8 +65,63 @@ class AppBottomNavBar extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: _tabs.map((tab) {
               final active = currentPage == tab.page;
+              final isChatbot = tab.page == AppPage.chatbot;
+
+              if (isChatbot) {
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => onNavigate(tab.page),
+                    behavior: HitTestBehavior.opaque,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Transform.translate(
+                          offset: const Offset(0, -14),
+                          child: Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              gradient: _activeGradient,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 3),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF06B6D4)
+                                      .withOpacity(active ? 0.5 : 0.35),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              tab.icon,
+                              color: Colors.white,
+                              size: 26,
+                            ),
+                          ),
+                        ),
+                        Transform.translate(
+                          offset: const Offset(0, -8),
+                          child: Text(
+                            tab.label,
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              color: active
+                                  ? const Color(0xFF0F172A)
+                                  : const Color(0xFF64748B),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
               return Expanded(
                 child: GestureDetector(
                   onTap: () => onNavigate(tab.page),

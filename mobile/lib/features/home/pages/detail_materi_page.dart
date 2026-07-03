@@ -17,6 +17,7 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
   late MateriDetail _active = widget.materiList.first;
   int? _expandedId = 1;
   bool _videoEnded = false;
+  bool _videoError = false;
   final Set<int> _watchedIds = {};
   VideoPlayerController? _controller;
 
@@ -27,13 +28,20 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
   }
 
   void _loadVideo(MateriDetail materi) {
+    _controller?.removeListener(_onVideoTick);
     _controller?.dispose();
+    setState(() => _videoError = false);
+
     final controller = VideoPlayerController.asset(materi.videoUrl);
     _controller = controller;
     controller.initialize().then((_) {
       if (!mounted) return;
       setState(() {});
       controller.addListener(_onVideoTick);
+    }).catchError((Object e, StackTrace st) {
+      debugPrint('Video init error for ${materi.videoUrl}: $e');
+      if (!mounted) return;
+      setState(() => _videoError = true);
     });
   }
 
@@ -175,14 +183,41 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
   }
 
   Widget _buildVideoPlayer() {
-    final c = _controller;
-    return AspectRatio(
+  final c = _controller;
+  return RepaintBoundary(
+    child: AspectRatio(
       aspectRatio: 16 / 9,
       child: Stack(
         fit: StackFit.expand,
         children: [
           Container(color: Colors.black),
-          if (c != null && c.value.isInitialized)
+          if (_videoError)
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.error_outline_rounded,
+                    color: Colors.white70,
+                    size: 36,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Video gagal dimuat',
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                  const SizedBox(height: 10),
+                  TextButton.icon(
+                    onPressed: () => _loadVideo(_active),
+                    icon: const Icon(Icons.refresh_rounded,
+                        size: 16, color: Colors.white),
+                    label: const Text('Coba lagi',
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
+            )
+          else if (c != null && c.value.isInitialized)
             GestureDetector(
               onTap: () {
                 setState(() {
@@ -195,7 +230,11 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
             const Center(
               child: CircularProgressIndicator(color: Colors.white54),
             ),
-          if (c != null && c.value.isInitialized && !c.value.isPlaying && !_videoEnded)
+          if (!_videoError &&
+              c != null &&
+              c.value.isInitialized &&
+              !c.value.isPlaying &&
+              !_videoEnded)
             const Center(
               child: Icon(
                 Icons.play_circle_fill_rounded,
@@ -255,8 +294,9 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
             ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildTitleCard() {
     return Container(

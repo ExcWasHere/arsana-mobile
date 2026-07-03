@@ -25,7 +25,8 @@ class _BerandaPageState extends State<BerandaPage> {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
     final meta = user.userMetadata;
-    final name = (meta?['full_name'] as String?)?.trim() ??
+    final name =
+        (meta?['full_name'] as String?)?.trim() ??
         (meta?['name'] as String?)?.trim() ??
         user.email?.split('@').first ??
         'Arsana';
@@ -45,11 +46,11 @@ class _BerandaPageState extends State<BerandaPage> {
       route: _FeatureRoute.materiBelajar,
     ),
     _FeatureData(
-      emoji: '🎮',
-      title: 'Arena Pintar',
-      subtitle: 'Kuis & latihan soal seru',
+      emoji: '💬',
+      title: 'Forum Kelas',
+      subtitle: 'Ruang diskusi guru & siswa',
       colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
-      tags: ['Kuis', 'Tantangan'],
+      tags: ['Diskusi', 'Real-time'],
       route: _FeatureRoute.none,
     ),
     _FeatureData(
@@ -83,9 +84,9 @@ class _BerandaPageState extends State<BerandaPage> {
   void _handleFeatureTap(_FeatureRoute route) {
     switch (route) {
       case _FeatureRoute.materiBelajar:
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const MateriBelajarPage()),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const MateriBelajarPage()));
         break;
       case _FeatureRoute.none:
         // TODO: navigasi fitur lain (Arena Pintar, Gesture Match, Sign Translate)
