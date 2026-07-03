@@ -5,6 +5,8 @@ import '../auth/login_screen.dart';
 import 'widgets/app_bottom_nav_bar.dart';
 import 'pages/beranda_page.dart';
 import 'pages/arena_page.dart';
+import 'pages/chatbot_page.dart';
+import 'pages/detail_materi_page.dart';
 import 'pages/lencana_page.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -36,6 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           BerandaPage(onLogout: _logout),
           const MateriBelajarPage(),
+          const DetailMateriPage(),
+          const ChatbotPage(),
           const ArenaPage(),
           const LencanaPage(),
         ],
