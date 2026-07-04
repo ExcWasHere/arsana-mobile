@@ -24,7 +24,7 @@ dist/
 # Jupyter
 .ipynb_checkpoints
 
-# Model files (opsional — kalau model AI lo gede, jangan push ke git, biasanya pakai Git LFS atau taruh di storage terpisah)
+# Model
 # *.pkl
 # *.joblib
 

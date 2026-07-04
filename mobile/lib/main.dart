@@ -37,6 +37,7 @@ class ArsanaApp extends StatelessWidget {
     return MaterialApp(
       title: 'Arsana',
       debugShowCheckedModeBanner: false,
+      color: const Color(0xFFF0FDFF),
       theme: AppTheme.light,
       initialRoute: SplashScreen.routeName,
       routes: {

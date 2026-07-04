@@ -11,6 +11,9 @@ class AppBackground extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
+        // Base color dulu, biar nggak pernah ada celah warna hitam
+        // walau SVG di atasnya telat/gagal render
+        Container(color: const Color(0xFFF0FDFF)),
         Positioned.fill(
           child: SvgPicture.asset(
             'assets/images/latar-belakang.svg',
