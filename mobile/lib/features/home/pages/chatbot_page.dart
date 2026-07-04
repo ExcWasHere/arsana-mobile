@@ -32,14 +32,14 @@ class ChatbotPage extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
-                            Icons.smart_toy_rounded,
+                            Icons.mark_chat_read_rounded,
                             color: Colors.white,
                             size: 42,
                           ),
                         ),
                         const SizedBox(height: 20),
                         const Text(
-                          'Chatbot Arsana',
+                          'Tanya Arsi',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
@@ -75,7 +75,7 @@ class ChatbotPage extends StatelessWidget {
       child: Row(
         children: [
           Text(
-            'Chatbot',
+            'Tanya Arsi',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w900,
@@ -101,7 +101,7 @@ class ChatbotPage extends StatelessWidget {
           children: [
             const Expanded(
               child: Text(
-                'Tulis pertanyaanmu di sini...',
+                'Tanya apa aja ke Arsi...',
                 style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
               ),
             ),

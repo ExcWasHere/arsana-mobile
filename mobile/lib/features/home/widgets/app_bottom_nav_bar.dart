@@ -25,8 +25,8 @@ class AppBottomNavBar extends StatelessWidget {
     ),
     _NavTab(
       page: AppPage.chatbot,
-      label: 'Chatbot',
-      icon: Icons.smart_toy_rounded,
+      label: 'Tanya Arsi',
+      icon: Icons.mark_chat_read_rounded,
     ),
     _NavTab(
       page: AppPage.forumKelas,

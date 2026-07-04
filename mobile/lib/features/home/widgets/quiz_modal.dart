@@ -121,7 +121,7 @@ class _QuizModalState extends State<QuizModal> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Kuis — ${widget.materiTitle}',
+                  'Kuis - ${widget.materiTitle}',
                   style: const TextStyle(
                     color: Color(0xFFA5F3FC),
                     fontSize: 10,

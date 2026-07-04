@@ -1,8 +1,13 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import '../../../core/widgets/app_background.dart';
 import '../models/materi_models.dart';
 import '../widgets/quiz_modal.dart';
+import '../widgets/video_controls_overlay.dart';
+import '../widgets/fullscreen_video_page.dart';
 
 class DetailMateriPage extends StatefulWidget {
   final List<MateriDetail> materiList;
@@ -18,6 +23,8 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
   int? _expandedId = 1;
   bool _videoEnded = false;
   bool _videoError = false;
+  bool _isDownloading = false;
+  double _playbackSpeed = 1.0;
   final Set<int> _watchedIds = {};
   VideoPlayerController? _controller;
 
@@ -30,7 +37,10 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
   void _loadVideo(MateriDetail materi) {
     _controller?.removeListener(_onVideoTick);
     _controller?.dispose();
-    setState(() => _videoError = false);
+    setState(() {
+      _videoError = false;
+      _playbackSpeed = 1.0;
+    });
 
     final controller = VideoPlayerController.asset(materi.videoUrl);
     _controller = controller;
@@ -65,6 +75,52 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
       _videoEnded = false;
     });
     _loadVideo(materi);
+  }
+
+  Future<void> _openFullscreen() async {
+    final c = _controller;
+    if (c == null) return;
+    final result = await Navigator.of(context).push<double>(
+      MaterialPageRoute(
+        builder: (_) => FullscreenVideoPage(
+          controller: c,
+          initialSpeed: _playbackSpeed,
+        ),
+        fullscreenDialog: true,
+      ),
+    );
+    if (result != null && mounted) {
+      setState(() => _playbackSpeed = result);
+    }
+  }
+
+  Future<void> _downloadVideo(MateriDetail materi) async {
+    if (_isDownloading) return;
+    setState(() => _isDownloading = true);
+    try {
+      final byteData = await rootBundle.load(materi.videoUrl);
+      final dir = await getApplicationDocumentsDirectory();
+      final fileName = materi.videoUrl.split('/').last;
+      final file = File('${dir.path}/$fileName');
+      await file.writeAsBytes(byteData.buffer.asUint8List());
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Video "${materi.title}" berhasil disimpan'),
+          backgroundColor: const Color(0xFF16A34A),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal menyimpan video: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
+    }
   }
 
   @override
@@ -139,7 +195,7 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Matematika — Operasi Perkalian',
+                  'Matematika - Operasi Perkalian',
                   style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -183,120 +239,111 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
   }
 
   Widget _buildVideoPlayer() {
-  final c = _controller;
-  return RepaintBoundary(
-    child: AspectRatio(
-      aspectRatio: 16 / 9,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Container(color: Colors.black),
-          if (_videoError)
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.error_outline_rounded,
-                    color: Colors.white70,
-                    size: 36,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Video gagal dimuat',
-                    style: TextStyle(color: Colors.white70, fontSize: 13),
-                  ),
-                  const SizedBox(height: 10),
-                  TextButton.icon(
-                    onPressed: () => _loadVideo(_active),
-                    icon: const Icon(Icons.refresh_rounded,
-                        size: 16, color: Colors.white),
-                    label: const Text('Coba lagi',
-                        style: TextStyle(color: Colors.white)),
-                  ),
-                ],
-              ),
-            )
-          else if (c != null && c.value.isInitialized)
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  c.value.isPlaying ? c.pause() : c.play();
-                });
-              },
-              child: VideoPlayer(c),
-            )
-          else
-            const Center(
-              child: CircularProgressIndicator(color: Colors.white54),
-            ),
-          if (!_videoError &&
-              c != null &&
-              c.value.isInitialized &&
-              !c.value.isPlaying &&
-              !_videoEnded)
-            const Center(
-              child: Icon(
-                Icons.play_circle_fill_rounded,
-                color: Colors.white70,
-                size: 56,
-              ),
-            ),
-          if (_videoEnded)
-            Container(
-              color: Colors.black.withOpacity(0.7),
-              child: Center(
+    final c = _controller;
+    return RepaintBoundary(
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(color: Colors.black),
+            if (_videoError)
+              Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(
-                      Icons.check_circle_rounded,
-                      color: Color(0xFF4ADE80),
-                      size: 44,
+                      Icons.error_outline_rounded,
+                      color: Colors.white70,
+                      size: 36,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Video gagal dimuat',
+                      style: TextStyle(color: Colors.white70, fontSize: 13),
                     ),
                     const SizedBox(height: 10),
-                    const Text(
-                      'Video Selesai! 🎉',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      'Yuk uji pemahamanmu!',
-                      style: TextStyle(color: Colors.white70, fontSize: 11),
-                    ),
-                    const SizedBox(height: 14),
-                    ElevatedButton.icon(
-                      onPressed: () => showQuizModal(
-                        context,
-                        materiTitle: _active.title,
-                      ),
-                      icon: const Icon(Icons.description_outlined, size: 16),
-                      label: const Text('Mulai Kuis'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0891B2),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                    TextButton.icon(
+                      onPressed: () => _loadVideo(_active),
+                      icon: const Icon(Icons.refresh_rounded,
+                          size: 16, color: Colors.white),
+                      label: const Text('Coba lagi',
+                          style: TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),
+              )
+            else if (c != null && c.value.isInitialized) ...[
+              VideoPlayer(c),
+              if (!_videoEnded)
+                VideoControlsOverlay(
+                  controller: c,
+                  isFullscreen: false,
+                  playbackSpeed: _playbackSpeed,
+                  onSpeedChanged: (s) => setState(() => _playbackSpeed = s),
+                  onToggleFullscreen: _openFullscreen,
+                  onDownload: () => _downloadVideo(_active),
+                  isDownloading: _isDownloading,
+                ),
+            ] else
+              const Center(
+                child: CircularProgressIndicator(color: Colors.white54),
               ),
-            ),
-        ],
+            if (_videoEnded)
+              Container(
+                color: Colors.black.withOpacity(0.7),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        color: Color(0xFF4ADE80),
+                        size: 44,
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Video Selesai! 🎉',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'Yuk uji pemahamanmu!',
+                        style: TextStyle(color: Colors.white70, fontSize: 11),
+                      ),
+                      const SizedBox(height: 14),
+                      ElevatedButton.icon(
+                        onPressed: () => showQuizModal(
+                          context,
+                          materiTitle: _active.title,
+                        ),
+                        icon: const Icon(Icons.description_outlined, size: 16),
+                        label: const Text('Mulai Kuis'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0891B2),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildTitleCard() {
     return Container(

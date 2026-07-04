@@ -1,23 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Palet warna Arsana.
-/// Primary  = Cyan cerah → warna brand utama & CTA
-/// Secondary = Teal       → aksen pendukung
-/// White     = background utama
 class AppColors {
   AppColors._();
-
-  // ===== PRIMARY — Cyan cerah =====
   static const Color primary = Color(0xFF06B6D4);
   static const Color primaryDark = Color(0xFF0891B2);
   static const Color primaryLight = Color(0xFFCFFAFE);
 
-  // ===== SECONDARY — Teal =====
   static const Color secondary = Color(0xFF0F766E);
   static const Color secondaryLight = Color(0xFFCCFBF1);
 
-  // ===== Neutral =====
   static const Color white = Color(0xFFFFFFFF);
   static const Color ink = Color(0xFF0B1F1D);
   static const Color mist = Color(0xFFF4FBFB);
