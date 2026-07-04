@@ -42,7 +42,6 @@ class _BerandaPageState extends State<BerandaPage> {
       title: 'Materi Belajar',
       subtitle: 'Materi belajar & video pembelajaran',
       colors: [Color(0xFF06B6D4), Color(0xFF14B8A6)],
-      tags: ['Video', 'Interaktif'],
       route: _FeatureRoute.materiBelajar,
     ),
     _FeatureData(
@@ -50,23 +49,20 @@ class _BerandaPageState extends State<BerandaPage> {
       title: 'Forum Kelas',
       subtitle: 'Ruang diskusi guru & siswa',
       colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
-      tags: ['Diskusi', 'Real-time'],
       route: _FeatureRoute.none,
     ),
     _FeatureData(
       emoji: '✋',
       title: 'Gesture Match',
-      subtitle: 'Praktik gerakan isyarat & validasi kamera AI',
+      subtitle: 'Mini game menebak gerakan isyarat SIBI',
       colors: [Color(0xFF14B8A6), Color(0xFF0D9488)],
-      tags: ['4 level', 'AI'],
       route: _FeatureRoute.none,
     ),
     _FeatureData(
       emoji: '🤟',
       title: 'Sign Translate',
-      subtitle: 'Teks ke animasi isyarat SIBI instan & real-time',
+      subtitle: 'Menerjemahkan teks ke bahasa isyarat SIBI',
       colors: [Color(0xFFA855F7), Color(0xFF7C3AED)],
-      tags: ['SIBI', 'Real-time'],
       route: _FeatureRoute.none,
     ),
   ];
@@ -89,7 +85,6 @@ class _BerandaPageState extends State<BerandaPage> {
         ).push(MaterialPageRoute(builder: (_) => const MateriBelajarPage()));
         break;
       case _FeatureRoute.none:
-        // TODO: navigasi fitur lain (Arena Pintar, Gesture Match, Sign Translate)
         break;
     }
   }
@@ -173,7 +168,7 @@ class _BerandaPageState extends State<BerandaPage> {
                       ),
                     ),
                     const Text(
-                      'Semangat belajar hari ini!',
+                      'Semangat belajarnya hari ini!',
                       style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                     ),
                   ],
@@ -220,7 +215,7 @@ class _BerandaPageState extends State<BerandaPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '7 Hari Streak!',
+                  '7 Hari Streak Belajar!',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -331,33 +326,6 @@ class _BerandaPageState extends State<BerandaPage> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 4,
-              runSpacing: 4,
-              children: f.tags
-                  .map(
-                    (tag) => Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: f.colors.first.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        tag,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: f.colors.first,
-                        ),
-                      ),
-                    ),
-                  )
-                  .toList(),
-            ),
           ],
         ),
       ),
@@ -442,7 +410,6 @@ class _FeatureData {
   final String title;
   final String subtitle;
   final List<Color> colors;
-  final List<String> tags;
   final _FeatureRoute route;
 
   const _FeatureData({
@@ -450,7 +417,6 @@ class _FeatureData {
     required this.title,
     required this.subtitle,
     required this.colors,
-    required this.tags,
     required this.route,
   });
 }

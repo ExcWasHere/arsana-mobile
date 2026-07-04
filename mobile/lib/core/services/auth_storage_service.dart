@@ -1,9 +1,4 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
-/// Service buat nyimpen status auth & PIN secara aman di device.
-/// Sementara cuma local (frontend-only). Nanti pas backend (Hono.js/Supabase)
-/// udah connect, ganti savePin/verifyPin biar hash PIN-nya dicek di server,
-/// jangan disimpan plain text walau di secure storage.
 class AuthStorageService {
   AuthStorageService._();
   static final AuthStorageService instance = AuthStorageService._();
@@ -13,6 +8,8 @@ class AuthStorageService {
   static const _keyPin = 'arsana_pin';
   static const _keyBiometricEnabled = 'arsana_biometric_enabled';
   static const _keyProfileComplete = 'arsana_profile_complete';
+  static const _keySessionExpiry = 'arsana_session_expiry';
+  static const _sessionDuration = Duration(days: 30);
 
   Future<void> savePin(String pin) => _storage.write(key: _keyPin, value: pin);
 
@@ -40,6 +37,20 @@ class AuthStorageService {
   Future<bool> isProfileComplete() async {
     final v = await _storage.read(key: _keyProfileComplete);
     return v == 'true';
+  }
+
+  Future<void> extendSession() =>
+      _storage.write(
+        key: _keySessionExpiry,
+        value: DateTime.now().add(_sessionDuration).toIso8601String(),
+      );
+
+  Future<bool> isSessionValid() async {
+    final saved = await _storage.read(key: _keySessionExpiry);
+    if (saved == null) return false;
+    final expiry = DateTime.tryParse(saved);
+    if (expiry == null) return false;
+    return DateTime.now().isBefore(expiry);
   }
 
   Future<void> clearAll() => _storage.deleteAll();

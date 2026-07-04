@@ -56,6 +56,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
     }
 
     await AuthStorageService.instance.savePin(_firstPin);
+    await AuthStorageService.instance.extendSession();
     if (!mounted) return;
     Navigator.of(context).pushReplacementNamed(BiometricSetupScreen.routeName);
   }

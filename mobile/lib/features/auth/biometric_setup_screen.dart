@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/services/auth_storage_service.dart';
@@ -37,6 +38,17 @@ class _BiometricSetupScreenState extends State<BiometricSetupScreen> {
         return;
       }
 
+      final available = await _auth.getAvailableBiometrics();
+      if (available.isEmpty) {
+        setState(() {
+          _isLoading = false;
+          _availabilityNote =
+              'Belum ada Face ID / sidik jari yang terdaftar di HP kamu. '
+              'Daftarkan dulu lewat Pengaturan HP, baru coba lagi di sini.';
+        });
+        return;
+      }
+
       final didAuthenticate = await _auth.authenticate(
         localizedReason: 'Aktifkan Face ID / sidik jari untuk login Arsana',
         options: const AuthenticationOptions(biometricOnly: true, stickyAuth: true),
@@ -48,11 +60,32 @@ class _BiometricSetupScreenState extends State<BiometricSetupScreen> {
       } else {
         setState(() => _isLoading = false);
       }
+    } on PlatformException catch (e) {
+      setState(() {
+        _isLoading = false;
+        _availabilityNote = _messageForError(e.code);
+      });
     } catch (_) {
       setState(() {
         _isLoading = false;
         _availabilityNote = 'Gagal mengaktifkan biometrik, coba lagi ya';
       });
+    }
+  }
+
+  String _messageForError(String code) {
+    switch (code) {
+      case 'NotAvailable':
+        return 'Biometrik gak tersedia di perangkat ini';
+      case 'NotEnrolled':
+        return 'Belum ada Face ID / sidik jari yang terdaftar. Daftarkan dulu lewat Pengaturan HP ya';
+      case 'PasscodeNotSet':
+        return 'Aktifkan dulu kunci layar (PIN/pola/password) di Pengaturan HP kamu';
+      case 'LockedOut':
+      case 'PermanentlyLockedOut':
+        return 'Sensor biometrik lagi terkunci karena kebanyakan gagal. Coba lagi nanti ya';
+      default:
+        return 'Gagal mengaktifkan biometrik, coba lagi ya';
     }
   }
 

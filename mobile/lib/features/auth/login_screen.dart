@@ -6,8 +6,7 @@ import '../../core/services/supabase_auth_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_background.dart';
 import '../../core/widgets/google_logo.dart';
-import '../home/home_screen.dart';
-import 'profile_setup_screen.dart';
+import '../../core/services/auth_flow_router.dart';
 import 'otp_screen.dart';
 
 enum LoginMethod { phone, email }
@@ -38,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Future<void> _onAuthStateChange(AuthState data) async {
+Future<void> _onAuthStateChange(AuthState data) async {
     if (data.event != AuthChangeEvent.signedIn) return;
     if (!_googleAuthInProgress) return;
     _googleAuthInProgress = false;
@@ -46,18 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     setState(() => _isLoading = true);
     try {
-      final hasProfile = await SupabaseAuthService.instance.hasProfile();
-      if (!mounted) return;
-      if (hasProfile) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          HomeScreen.routeName,
-          (_) => false,
-        );
-      } else {
-        Navigator.of(context).pushReplacementNamed(
-          ProfileSetupScreen.routeName,
-        );
-      }
+      await AuthFlowRouter.routeAfterFullLogin(context);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
