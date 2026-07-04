@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-
-/// Indikator bulatan buat nunjukin progress input PIN.
 class PinDots extends StatelessWidget {
   final int length;
   final int filled;

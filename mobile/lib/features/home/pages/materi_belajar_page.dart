@@ -220,7 +220,6 @@ class _SubjectCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // watermark emoji decoration
             Positioned(
               right: -16,
               bottom: -16,

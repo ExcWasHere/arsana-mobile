@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
-/// Keypad numerik kustom buat input PIN.
-/// Dipakai di pin_setup_screen.dart dan pin_unlock_screen.dart
+// Keypad numerik kustom buat input PIN
 class NumericKeypad extends StatelessWidget {
   final ValueChanged<String> onKeyTap;
   final VoidCallback onBackspace;

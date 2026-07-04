@@ -3,6 +3,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/theme/app_colors.dart';
 import 'features/splash/splash_screen.dart';
+import 'features/auth/auth_gate_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/otp_screen.dart';
 import 'features/auth/profile_setup_screen.dart';
@@ -42,6 +43,7 @@ class ArsanaApp extends StatelessWidget {
       initialRoute: SplashScreen.routeName,
       routes: {
         SplashScreen.routeName: (_) => const SplashScreen(),
+        AuthGateScreen.routeName: (_) => const AuthGateScreen(),
         LoginScreen.routeName: (_) => const LoginScreen(),
         ProfileSetupScreen.routeName: (_) => const ProfileSetupScreen(),
         PinSetupScreen.routeName: (_) => const PinSetupScreen(),

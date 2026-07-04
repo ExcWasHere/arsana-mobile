@@ -154,10 +154,6 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildTitleCard(),
-                          if (_videoEnded) ...[
-                            const SizedBox(height: 12),
-                            _buildQuizButton(context),
-                          ],
                           const SizedBox(height: 16),
                           _buildMateriListCard(completedCount, progress),
                           const SizedBox(height: 24),
@@ -312,7 +308,7 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
                       ),
                       const SizedBox(height: 2),
                       const Text(
-                        'Yuk uji pemahamanmu!',
+                        'Udah siap belom?!, Buat uji pemahamanmu!',
                         style: TextStyle(color: Colors.white70, fontSize: 11),
                       ),
                       const SizedBox(height: 14),
@@ -416,26 +412,6 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildQuizButton(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: () =>
-            showQuizModal(context, materiTitle: _active.title),
-        icon: const Icon(Icons.description_outlined, size: 16),
-        label: const Text('Kerjakan Kuis Sekarang'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF0891B2),
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 13),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
       ),
     );
   }
