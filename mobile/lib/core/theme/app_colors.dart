@@ -6,10 +6,8 @@ class AppColors {
   static const Color primary = Color(0xFF06B6D4);
   static const Color primaryDark = Color(0xFF0891B2);
   static const Color primaryLight = Color(0xFFCFFAFE);
-
   static const Color secondary = Color(0xFF0F766E);
   static const Color secondaryLight = Color(0xFFCCFBF1);
-
   static const Color white = Color(0xFFFFFFFF);
   static const Color ink = Color(0xFF0B1F1D);
   static const Color mist = Color(0xFFF4FBFB);
@@ -27,7 +25,6 @@ class AppColors {
 
 class AppTheme {
   AppTheme._();
-
   static ThemeData light = ThemeData(
     useMaterial3: true,
     scaffoldBackgroundColor: AppColors.mist,

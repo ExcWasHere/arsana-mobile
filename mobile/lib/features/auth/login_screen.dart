@@ -7,15 +7,14 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_background.dart';
 import '../../core/widgets/google_logo.dart';
 import '../../core/services/auth_flow_router.dart';
+import '../../core/widgets/product_tour_dialog.dart';
+import '../../core/services/product_tour_step.dart';
 import 'otp_screen.dart';
 
 enum LoginMethod { phone, email }
-
 class LoginScreen extends StatefulWidget {
   static const routeName = '/login';
-
   const LoginScreen({super.key});
-
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -25,9 +24,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _inputController = TextEditingController();
   bool _isLoading = false;
-
   bool _googleAuthInProgress = false;
   late final StreamSubscription<AuthState> _authSub;
+  final _methodSwitchKey = GlobalKey();
+  final _inputFieldKey = GlobalKey();
+  final _googleButtonKey = GlobalKey();
 
   @override
   void initState() {
@@ -35,6 +36,34 @@ class _LoginScreenState extends State<LoginScreen> {
     _authSub = Supabase.instance.client.auth.onAuthStateChange.listen(
       _onAuthStateChange,
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ProductTourDialog.showIfNeeded(
+        context,
+        steps: [
+          const ProductTourStep(
+            videoAssetPath: 'assets/videos/NIZAM.mp4',
+            title: 'Selamat Datang di Arsana',
+            description:
+                'Yuk kenalan dulu sama Arsana sebelum mulai belajar bahasa isyarat',
+          ),
+          ProductTourStep(
+            videoAssetPath: 'assets/videos/NIZAM.mp4',
+            title: 'Pilih Cara Masuk',
+            description:
+                'Kamu bisa pilih masuk pakai No. HP atau Email di sini',
+            targetKey: _methodSwitchKey,
+          ),
+          ProductTourStep(
+            videoAssetPath: 'assets/videos/NIZAM.mp4',
+            title: 'Atau Pakai Google',
+            description:
+                'Kalau males isi manual, kamu juga bisa langsung masuk pakai akun Google',
+            targetKey: _googleButtonKey,
+          ),
+        ],
+      );
+    });
   }
 
 Future<void> _onAuthStateChange(AuthState data) async {
@@ -178,6 +207,7 @@ Future<void> _onAuthStateChange(AuthState data) async {
                   _buildMethodSwitch(),
                   const SizedBox(height: 20),
                   TextFormField(
+                    key: _inputFieldKey,
                     controller: _inputController,
                     keyboardType: _method == LoginMethod.phone
                         ? TextInputType.phone
@@ -226,6 +256,7 @@ Future<void> _onAuthStateChange(AuthState data) async {
                   ),
                   const SizedBox(height: 24),
                   OutlinedButton.icon(
+                    key: _googleButtonKey,
                     onPressed: _isLoading ? null : _loginWithGoogle,
                     icon: const GoogleLogo(size: 20),
                     label: const Text('Masuk dengan Google'),
@@ -250,6 +281,7 @@ Future<void> _onAuthStateChange(AuthState data) async {
 
   Widget _buildMethodSwitch() {
     return Container(
+      key: _methodSwitchKey,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: AppColors.lightCyan,
