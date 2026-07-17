@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/services/auth_storage_service.dart';
+import '../../core/services/product_tour_service.dart';
+import '../../core/services/product_tour_step.dart';
 import '../../core/widgets/app_background.dart';
 import '../../core/widgets/numeric_keypad.dart';
 import '../../core/widgets/pin_dots.dart';
+import '../../core/widgets/product_tour_dialog.dart';
 import 'biometric_setup_screen.dart';
 
 const _pinLength = 6;
@@ -22,6 +25,26 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   String _currentInput = '';
   bool _isConfirmStep = false;
   bool _hasError = false;
+  final _pinDotsKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ProductTourDialog.showIfNeeded(
+        context,
+        tourKey: 'pin_setup_tour',
+        store: ProductTourService.instance,
+        steps: [
+          ProductTourStep(
+            videoAssetPath: 'assets/videos/Script4.mov',
+            title: 'Amankan Akunmu',
+            targetKey: _pinDotsKey,
+          ),
+        ],
+      );
+    });
+  }
 
   void _onKeyTap(String digit) {
     if (_currentInput.length >= _pinLength) return;
@@ -102,7 +125,14 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 36),
-                PinDots(length: _pinLength, filled: _currentInput.length, hasError: _hasError),
+                Container(
+                  key: _pinDotsKey,
+                  child: PinDots(
+                    length: _pinLength,
+                    filled: _currentInput.length,
+                    hasError: _hasError,
+                  ),
+                ),
                 if (_hasError) ...[
                   const SizedBox(height: 12),
                   const Text('PIN tidak sama, coba lagi', style: TextStyle(color: AppColors.error)),

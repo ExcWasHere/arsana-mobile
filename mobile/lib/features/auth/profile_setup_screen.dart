@@ -3,7 +3,10 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/services/auth_storage_service.dart';
 import '../../core/services/api_client.dart';
+import '../../core/services/product_tour_service.dart';
+import '../../core/services/product_tour_step.dart';
 import '../../core/widgets/app_background.dart';
+import '../../core/widgets/product_tour_dialog.dart';
 import 'pin_setup_screen.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
@@ -20,8 +23,35 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _nameController = TextEditingController();
   final _cityController = TextEditingController();
   final _schoolController = TextEditingController();
+  final _formFieldsKey = GlobalKey();
   DateTime? _birthDate;
+  int? _selectedGrade;
   bool _isLoading = false;
+
+  static const _gradeOptions = [1, 2, 3, 4, 5, 6];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ProductTourDialog.showIfNeeded(
+        context,
+        tourKey: 'profile_setup_tour',
+        store: ProductTourService.instance,
+        steps: [
+          const ProductTourStep(
+            videoAssetPath: 'assets/videos/Script3.mov',
+            title: 'Lengkapi Data Dirimu',
+          ),
+          ProductTourStep(
+            videoAssetPath: 'assets/videos/Script3.mov',
+            title: 'Isi Data di Sini',
+            targetKey: _formFieldsKey,
+          ),
+        ],
+      );
+    });
+  }
 
   @override
   void dispose() {
@@ -57,6 +87,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       );
       return;
     }
+    if (_selectedGrade == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kelas wajib dipilih')),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
 
@@ -66,6 +102,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         'birthDate': _birthDate!.toIso8601String(),
         'city': _cityController.text.trim(),
         'school': _schoolController.text.trim(),
+        'grade': _selectedGrade,
       });
 
       if (response.statusCode != 200 && response.statusCode != 201) {
@@ -109,47 +146,75 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     style: theme.textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 28),
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Nama lengkap',
-                      prefixIcon: Icon(Icons.person_outline),
-                    ),
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Nama wajib diisi' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  InkWell(
-                    onTap: _pickBirthDate,
-                    borderRadius: BorderRadius.circular(14),
-                    child: InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: 'Tanggal lahir',
-                        prefixIcon: Icon(Icons.cake_outlined),
+                  Column(
+                    key: _formFieldsKey,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Nama lengkap',
+                          prefixIcon: Icon(Icons.person_outline),
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Nama wajib diisi'
+                            : null,
                       ),
-                      child: Text(dateLabel),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _cityController,
-                    decoration: const InputDecoration(
-                      labelText: 'Kota asal',
-                      prefixIcon: Icon(Icons.location_city_outlined),
-                    ),
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Kota asal wajib diisi' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _schoolController,
-                    decoration: const InputDecoration(
-                      labelText: 'Asal sekolah',
-                      prefixIcon: Icon(Icons.school_outlined),
-                    ),
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? 'Asal sekolah wajib diisi'
-                        : null,
+                      const SizedBox(height: 16),
+                      InkWell(
+                        onTap: _pickBirthDate,
+                        borderRadius: BorderRadius.circular(14),
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: 'Tanggal lahir',
+                            prefixIcon: Icon(Icons.cake_outlined),
+                          ),
+                          child: Text(dateLabel),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _cityController,
+                        decoration: const InputDecoration(
+                          labelText: 'Kota asal',
+                          prefixIcon: Icon(Icons.location_city_outlined),
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Kota asal wajib diisi'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _schoolController,
+                        decoration: const InputDecoration(
+                          labelText: 'Asal sekolah',
+                          prefixIcon: Icon(Icons.school_outlined),
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Asal sekolah wajib diisi'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<int>(
+                        value: _selectedGrade,
+                        decoration: const InputDecoration(
+                          labelText: 'Kelas',
+                          prefixIcon: Icon(Icons.class_outlined),
+                        ),
+                        items: _gradeOptions
+                            .map(
+                              (grade) => DropdownMenuItem(
+                                value: grade,
+                                child: Text('Kelas $grade SD'),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) =>
+                            setState(() => _selectedGrade = value),
+                        validator: (v) =>
+                            v == null ? 'Kelas wajib dipilih' : null,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 28),
                   ElevatedButton(

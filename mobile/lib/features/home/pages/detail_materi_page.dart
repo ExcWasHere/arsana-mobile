@@ -4,6 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import '../../../core/widgets/app_background.dart';
+import '../../../core/widgets/product_tour_dialog.dart';
+import '../../../core/services/product_tour_service.dart';
+import '../../../core/services/product_tour_step.dart';
 import '../models/materi_models.dart';
 import '../widgets/quiz_modal.dart';
 import '../widgets/video_controls_overlay.dart';
@@ -27,6 +30,8 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
   double _playbackSpeed = 1.0;
   final Set<int> _watchedIds = {};
   VideoPlayerController? _controller;
+  final _downloadButtonKey = GlobalKey();
+  bool _tourShown = false;
 
   @override
   void initState() {
@@ -48,10 +53,31 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
       if (!mounted) return;
       setState(() {});
       controller.addListener(_onVideoTick);
+      _maybeShowTour();
     }).catchError((Object e, StackTrace st) {
       debugPrint('Video init error for ${materi.videoUrl}: $e');
       if (!mounted) return;
       setState(() => _videoError = true);
+    });
+  }
+
+  void _maybeShowTour() {
+    if (_tourShown) return;
+    _tourShown = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ProductTourDialog.showIfNeeded(
+        context,
+        tourKey: 'detail_materi_tour',
+        store: ProductTourService.instance,
+        steps: [
+          ProductTourStep(
+            videoAssetPath: 'assets/videos/Script7.mov',
+            title: 'Simpan & Uji Pemahamanmu',
+            targetKey: _downloadButtonKey,
+          ),
+        ],
+      );
     });
   }
 
@@ -280,6 +306,7 @@ class _DetailMateriPageState extends State<DetailMateriPage> {
                   onToggleFullscreen: _openFullscreen,
                   onDownload: () => _downloadVideo(_active),
                   isDownloading: _isDownloading,
+                  downloadButtonKey: _downloadButtonKey,
                 ),
             ] else
               const Center(

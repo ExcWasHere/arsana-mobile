@@ -3,7 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/services/auth_storage_service.dart';
+import '../../core/services/product_tour_service.dart';
+import '../../core/services/product_tour_step.dart';
 import '../../core/widgets/app_background.dart';
+import '../../core/widgets/product_tour_dialog.dart';
 import '../home/home_screen.dart';
 
 class BiometricSetupScreen extends StatefulWidget {
@@ -19,6 +22,26 @@ class _BiometricSetupScreenState extends State<BiometricSetupScreen> {
   final _auth = LocalAuthentication();
   bool _isLoading = false;
   String? _availabilityNote;
+  final _enableButtonKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ProductTourDialog.showIfNeeded(
+        context,
+        tourKey: 'biometric_setup_tour',
+        store: ProductTourService.instance,
+        steps: [
+          ProductTourStep(
+            videoAssetPath: 'assets/videos/Script4.mov',
+            title: 'Login Lebih Aman',
+            targetKey: _enableButtonKey,
+          ),
+        ],
+      );
+    });
+  }
 
   Future<void> _enableBiometric() async {
     setState(() {
@@ -141,6 +164,7 @@ class _BiometricSetupScreenState extends State<BiometricSetupScreen> {
                 ],
                 const SizedBox(height: 36),
                 ElevatedButton(
+                  key: _enableButtonKey,
                   onPressed: _isLoading ? null : _enableBiometric,
                   child: _isLoading
                       ? const SizedBox(

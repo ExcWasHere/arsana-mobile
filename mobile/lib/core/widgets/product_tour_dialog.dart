@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -157,7 +159,10 @@ class _ProductTourDialogState extends State<ProductTourDialog> {
     final screenHeight = mq.size.height;
     const horizontalInset = 20.0;
     final cardWidth = screenWidth - (horizontalInset * 2);
-    final videoHeight = cardWidth * 9 / 16;
+    final videoHeight = math.min(
+      cardWidth * 4 / 3,
+      screenHeight * 0.48,
+    );
 
     final targetRect = _resolveTargetRect(
       _currentStep.targetKey,

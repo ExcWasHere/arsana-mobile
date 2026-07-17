@@ -10,6 +10,7 @@ class VideoControlsOverlay extends StatefulWidget {
   final bool isDownloading;
   final double playbackSpeed;
   final ValueChanged<double> onSpeedChanged;
+  final GlobalKey? downloadButtonKey;
 
   const VideoControlsOverlay({
     super.key,
@@ -20,6 +21,7 @@ class VideoControlsOverlay extends StatefulWidget {
     required this.onSpeedChanged,
     this.onDownload,
     this.isDownloading = false,
+    this.downloadButtonKey,
   });
 
   @override
@@ -167,6 +169,7 @@ class _VideoControlsOverlayState extends State<VideoControlsOverlay> {
                           const Spacer(),
                           if (widget.onDownload != null)
                             IconButton(
+                              key: widget.downloadButtonKey,
                               onPressed: widget.isDownloading
                                   ? null
                                   : () {

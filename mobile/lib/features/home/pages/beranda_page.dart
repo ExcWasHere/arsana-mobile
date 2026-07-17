@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/widgets/app_background.dart';
+import '../../../core/widgets/product_tour_dialog.dart';
+import '../../../core/services/product_tour_service.dart';
+import '../../../core/services/product_tour_step.dart';
 import '../pages/materi_belajar_page.dart';
 
 class BerandaPage extends StatefulWidget {
@@ -14,11 +17,46 @@ class BerandaPage extends StatefulWidget {
 
 class _BerandaPageState extends State<BerandaPage> {
   String _userName = 'Arsana';
+  final List<GlobalKey> _featureKeys =
+      List.generate(_features.length, (_) => GlobalKey());
 
   @override
   void initState() {
     super.initState();
     _loadUser();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ProductTourDialog.showIfNeeded(
+        context,
+        tourKey: 'beranda_tour',
+        store: ProductTourService.instance,
+        steps: [
+          const ProductTourStep(
+            videoAssetPath: 'assets/videos/Script5.mov',
+            title: 'Selamat Datang di Beranda',
+          ),
+          ProductTourStep(
+            videoAssetPath: 'assets/videos/Script6.mov',
+            title: 'Materi Belajar',
+            targetKey: _featureKeys[0],
+          ),
+          ProductTourStep(
+            videoAssetPath: 'assets/videos/Script8.mov',
+            title: 'Forum Kelas',
+            targetKey: _featureKeys[1],
+          ),
+          ProductTourStep(
+            videoAssetPath: 'assets/videos/Script9.mov',
+            title: 'Gesture Match',
+            targetKey: _featureKeys[2],
+          ),
+          ProductTourStep(
+            videoAssetPath: 'assets/videos/Script10.mov',
+            title: 'Sign Translate',
+            targetKey: _featureKeys[3],
+          ),
+        ],
+      );
+    });
   }
 
   void _loadUser() {
@@ -271,12 +309,16 @@ class _BerandaPageState extends State<BerandaPage> {
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
       childAspectRatio: 0.92,
-      children: _features.map(_buildFeatureCard).toList(),
+      children: List.generate(
+        _features.length,
+        (i) => _buildFeatureCard(_features[i], _featureKeys[i]),
+      ),
     );
   }
 
-  Widget _buildFeatureCard(_FeatureData f) {
+  Widget _buildFeatureCard(_FeatureData f, GlobalKey key) {
     return GestureDetector(
+      key: key,
       onTap: () => _handleFeatureTap(f.route),
       child: Container(
         padding: const EdgeInsets.all(14),
