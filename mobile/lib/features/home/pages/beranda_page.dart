@@ -5,6 +5,9 @@ import '../../../core/widgets/product_tour_dialog.dart';
 import '../../../core/services/product_tour_service.dart';
 import '../../../core/services/product_tour_step.dart';
 import '../pages/materi_belajar_page.dart';
+import '../pages/forum_kelas_page.dart';
+import '../pages/gesture_match.dart';
+import '../pages/sign_translate_page.dart';
 
 class BerandaPage extends StatefulWidget {
   final VoidCallback onLogout;
@@ -87,21 +90,21 @@ class _BerandaPageState extends State<BerandaPage> {
       title: 'Forum Kelas',
       subtitle: 'Ruang diskusi guru & siswa',
       colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
-      route: _FeatureRoute.none,
+      route: _FeatureRoute.forumKelas,
     ),
     _FeatureData(
       emoji: '✋',
       title: 'Gesture Match',
       subtitle: 'Mini game menebak gerakan isyarat SIBI',
       colors: [Color(0xFF14B8A6), Color(0xFF0D9488)],
-      route: _FeatureRoute.none,
+      route: _FeatureRoute.gestureMatch,
     ),
     _FeatureData(
       emoji: '🤟',
       title: 'Sign Translate',
       subtitle: 'Menerjemahkan teks ke bahasa isyarat SIBI',
       colors: [Color(0xFFA855F7), Color(0xFF7C3AED)],
-      route: _FeatureRoute.none,
+      route: _FeatureRoute.signTranslate,
     ),
   ];
 
@@ -121,6 +124,21 @@ class _BerandaPageState extends State<BerandaPage> {
         Navigator.of(
           context,
         ).push(MaterialPageRoute(builder: (_) => const MateriBelajarPage()));
+        break;
+      case _FeatureRoute.forumKelas:
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const ForumKelasPage()));
+        break;
+      case _FeatureRoute.gestureMatch:
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const GestureMatchPage()));
+        break;
+      case _FeatureRoute.signTranslate:
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const SignTranslatePage()));
         break;
       case _FeatureRoute.none:
         break;
@@ -445,7 +463,7 @@ class _BerandaPageState extends State<BerandaPage> {
   }
 }
 
-enum _FeatureRoute { materiBelajar, none }
+enum _FeatureRoute { materiBelajar, forumKelas, gestureMatch, signTranslate, none }
 
 class _FeatureData {
   final String emoji;
