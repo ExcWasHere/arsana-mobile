@@ -4,7 +4,7 @@ import '../../core/services/auth_storage_service.dart';
 import '../auth/login_screen.dart';
 import 'widgets/app_bottom_nav_bar.dart';
 import 'pages/beranda_page.dart';
-import 'pages/arena_page.dart';
+import 'pages/forum_kelas_page.dart';
 import 'pages/chatbot_page.dart';
 import 'pages/lencana_page.dart';
 
@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
           BerandaPage(onLogout: _logout),
           const MateriBelajarPage(),
           const ChatbotPage(),
-          const ArenaPage(),
+          const ForumKelasPage(),
           const LencanaPage(),
         ],
       ),

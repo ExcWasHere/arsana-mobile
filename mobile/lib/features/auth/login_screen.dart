@@ -42,23 +42,17 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
         steps: [
           const ProductTourStep(
-            videoAssetPath: 'assets/videos/NIZAM.mp4',
+            videoAssetPath: 'assets/videos/Script1.mov',
             title: 'Selamat Datang di Arsana',
-            description:
-                'Yuk kenalan dulu sama Arsana sebelum mulai belajar bahasa isyarat',
           ),
           ProductTourStep(
-            videoAssetPath: 'assets/videos/NIZAM.mp4',
+            videoAssetPath: 'assets/videos/Script2.mov',
             title: 'Pilih Cara Masuk',
-            description:
-                'Kamu bisa pilih masuk pakai No. HP atau Email di sini',
             targetKey: _methodSwitchKey,
           ),
           ProductTourStep(
-            videoAssetPath: 'assets/videos/NIZAM.mp4',
+            videoAssetPath: 'assets/videos/Script2.mov',
             title: 'Atau Pakai Google',
-            description:
-                'Kalau males isi manual, kamu juga bisa langsung masuk pakai akun Google',
             targetKey: _googleButtonKey,
           ),
         ],

@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/widgets/app_background.dart';
+import '../../../core/widgets/product_tour_dialog.dart';
+import '../../../core/services/product_tour_service.dart';
+import '../../../core/services/product_tour_step.dart';
 import '../pages/materi_belajar_page.dart';
+import '../pages/forum_kelas_page.dart';
+import '../pages/gesture_match.dart';
+import '../pages/sign_translate_page.dart';
 
 class BerandaPage extends StatefulWidget {
   final VoidCallback onLogout;
@@ -14,11 +20,46 @@ class BerandaPage extends StatefulWidget {
 
 class _BerandaPageState extends State<BerandaPage> {
   String _userName = 'Arsana';
+  final List<GlobalKey> _featureKeys =
+      List.generate(_features.length, (_) => GlobalKey());
 
   @override
   void initState() {
     super.initState();
     _loadUser();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ProductTourDialog.showIfNeeded(
+        context,
+        tourKey: 'beranda_tour',
+        store: ProductTourService.instance,
+        steps: [
+          const ProductTourStep(
+            videoAssetPath: 'assets/videos/Script5.mov',
+            title: 'Selamat Datang di Beranda',
+          ),
+          ProductTourStep(
+            videoAssetPath: 'assets/videos/Script6.mov',
+            title: 'Materi Belajar',
+            targetKey: _featureKeys[0],
+          ),
+          ProductTourStep(
+            videoAssetPath: 'assets/videos/Script8.mov',
+            title: 'Forum Kelas',
+            targetKey: _featureKeys[1],
+          ),
+          ProductTourStep(
+            videoAssetPath: 'assets/videos/Script9.mov',
+            title: 'Gesture Match',
+            targetKey: _featureKeys[2],
+          ),
+          ProductTourStep(
+            videoAssetPath: 'assets/videos/Script10.mov',
+            title: 'Sign Translate',
+            targetKey: _featureKeys[3],
+          ),
+        ],
+      );
+    });
   }
 
   void _loadUser() {
@@ -49,21 +90,21 @@ class _BerandaPageState extends State<BerandaPage> {
       title: 'Forum Kelas',
       subtitle: 'Ruang diskusi guru & siswa',
       colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
-      route: _FeatureRoute.none,
+      route: _FeatureRoute.forumKelas,
     ),
     _FeatureData(
       emoji: '✋',
       title: 'Gesture Match',
       subtitle: 'Mini game menebak gerakan isyarat SIBI',
       colors: [Color(0xFF14B8A6), Color(0xFF0D9488)],
-      route: _FeatureRoute.none,
+      route: _FeatureRoute.gestureMatch,
     ),
     _FeatureData(
       emoji: '🤟',
       title: 'Sign Translate',
       subtitle: 'Menerjemahkan teks ke bahasa isyarat SIBI',
       colors: [Color(0xFFA855F7), Color(0xFF7C3AED)],
-      route: _FeatureRoute.none,
+      route: _FeatureRoute.signTranslate,
     ),
   ];
 
@@ -83,6 +124,21 @@ class _BerandaPageState extends State<BerandaPage> {
         Navigator.of(
           context,
         ).push(MaterialPageRoute(builder: (_) => const MateriBelajarPage()));
+        break;
+      case _FeatureRoute.forumKelas:
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const ForumKelasPage()));
+        break;
+      case _FeatureRoute.gestureMatch:
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const GestureMatchPage()));
+        break;
+      case _FeatureRoute.signTranslate:
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const SignTranslatePage()));
         break;
       case _FeatureRoute.none:
         break;
@@ -271,12 +327,16 @@ class _BerandaPageState extends State<BerandaPage> {
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
       childAspectRatio: 0.92,
-      children: _features.map(_buildFeatureCard).toList(),
+      children: List.generate(
+        _features.length,
+        (i) => _buildFeatureCard(_features[i], _featureKeys[i]),
+      ),
     );
   }
 
-  Widget _buildFeatureCard(_FeatureData f) {
+  Widget _buildFeatureCard(_FeatureData f, GlobalKey key) {
     return GestureDetector(
+      key: key,
       onTap: () => _handleFeatureTap(f.route),
       child: Container(
         padding: const EdgeInsets.all(14),
@@ -403,7 +463,7 @@ class _BerandaPageState extends State<BerandaPage> {
   }
 }
 
-enum _FeatureRoute { materiBelajar, none }
+enum _FeatureRoute { materiBelajar, forumKelas, gestureMatch, signTranslate, none }
 
 class _FeatureData {
   final String emoji;

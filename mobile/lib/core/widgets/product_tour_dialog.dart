@@ -60,6 +60,11 @@ class ProductTourDialog extends StatefulWidget {
 }
 
 class _ProductTourDialogState extends State<ProductTourDialog> {
+  static const double _fallbackAspectRatio = 3 / 4;
+  static const double _gap = 16.0;
+  static const double _screenSafeMargin = 20.0;
+  static const double _minVideoHeight = 90.0;
+
   late VideoPlayerController _controller;
   int _stepIndex = 0;
   bool _dontRemindAgain = false;
@@ -150,6 +155,38 @@ class _ProductTourDialogState extends State<ProductTourDialog> {
     return rect.inflate(padding);
   }
 
+  double get _activeAspectRatio {
+    if (_isReady) {
+      final size = _controller.value.size;
+      if (size.width > 0 && size.height > 0) {
+        return size.width / size.height;
+      }
+    }
+    return _fallbackAspectRatio;
+  }
+
+  Size _resolveVideoBoxSize(double maxWidth, double maxHeight) {
+    final aspectRatio = _activeAspectRatio;
+    var width = maxWidth;
+    var height = width / aspectRatio;
+    if (height > maxHeight) {
+      height = maxHeight;
+      width = height * aspectRatio;
+    }
+    return Size(width, height);
+  }
+  double _estimateChromeHeight() {
+    final step = _currentStep;
+    var height = 32.0;
+    if (widget.steps.length > 1) height += 20;
+    if (step.title != null) height += 28;
+    if (step.description != null) height += 44;
+    height += 12;
+    height += 12;
+    height += 44;
+    return height;
+  }
+
   @override
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
@@ -157,7 +194,6 @@ class _ProductTourDialogState extends State<ProductTourDialog> {
     final screenHeight = mq.size.height;
     const horizontalInset = 20.0;
     final cardWidth = screenWidth - (horizontalInset * 2);
-    final videoHeight = cardWidth * 9 / 16;
 
     final targetRect = _resolveTargetRect(
       _currentStep.targetKey,
@@ -183,7 +219,6 @@ class _ProductTourDialogState extends State<ProductTourDialog> {
           context: context,
           targetRect: targetRect,
           cardWidth: cardWidth,
-          videoHeight: videoHeight,
           screenHeight: screenHeight,
           horizontalInset: horizontalInset,
         ),
@@ -195,12 +230,44 @@ class _ProductTourDialogState extends State<ProductTourDialog> {
     required BuildContext context,
     required Rect? targetRect,
     required double cardWidth,
-    required double videoHeight,
     required double screenHeight,
     required double horizontalInset,
   }) {
-    final step = _currentStep;
-    const gap = 16.0;
+    final chromeHeight = _estimateChromeHeight();
+    final absoluteMaxVideoHeight = screenHeight * 0.4;
+
+    double top;
+    double? bottom;
+    double maxVideoHeight;
+
+    if (targetRect == null) {
+      final available =
+          screenHeight - (_screenSafeMargin * 2) - chromeHeight;
+      maxVideoHeight = available.clamp(_minVideoHeight, absoluteMaxVideoHeight);
+      final cardHeightGuess = chromeHeight + maxVideoHeight;
+      top = ((screenHeight - cardHeightGuess) / 2).clamp(
+        _screenSafeMargin,
+        screenHeight - _screenSafeMargin - cardHeightGuess,
+      );
+    } else {
+      final spaceBelow =
+          screenHeight - targetRect.bottom - _gap - _screenSafeMargin;
+      final spaceAbove = targetRect.top - _gap - _screenSafeMargin;
+      final placeBelow = spaceBelow >= spaceAbove;
+      final available = placeBelow ? spaceBelow : spaceAbove;
+
+      maxVideoHeight =
+          (available - chromeHeight).clamp(_minVideoHeight, absoluteMaxVideoHeight);
+
+      if (placeBelow) {
+        top = targetRect.bottom + _gap;
+        bottom = null;
+      } else {
+        top = targetRect.top - _gap - (chromeHeight + maxVideoHeight);
+        top = top.clamp(_screenSafeMargin, double.infinity);
+        bottom = null;
+      }
+    }
 
     final cardContent = Material(
       color: Theme.of(context).colorScheme.surface,
@@ -224,23 +291,28 @@ class _ProductTourDialogState extends State<ProductTourDialog> {
                       ?.copyWith(color: Colors.grey),
                 ),
               ),
-            if (step.title != null) ...[
+            if (_currentStep.title != null) ...[
               Text(
-                step.title!,
+                _currentStep.title!,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 4),
             ],
-            if (step.description != null) ...[
+            if (_currentStep.description != null) ...[
               Text(
-                step.description!,
+                _currentStep.description!,
                 style: Theme.of(context).textTheme.bodySmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
             ],
-            _buildVideoArea(width: cardWidth, height: videoHeight),
+            Center(
+              child: _buildVideoArea(
+                maxWidth: cardWidth,
+                maxHeight: maxVideoHeight,
+              ),
+            ),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -278,40 +350,23 @@ class _ProductTourDialogState extends State<ProductTourDialog> {
         ),
       ),
     );
-    if (targetRect == null) {
-      return Positioned(
-        left: horizontalInset,
-        right: horizontalInset,
-        top: (screenHeight - videoHeight) / 2 - 60,
-        child: cardContent,
-      );
-    }
-    final spaceBelow = screenHeight - targetRect.bottom;
-    final spaceAbove = targetRect.top;
-    final placeBelow = spaceBelow >= spaceAbove;
-
-    if (placeBelow) {
-      return Positioned(
-        left: horizontalInset,
-        right: horizontalInset,
-        top: targetRect.bottom + gap,
-        child: cardContent,
-      );
-    }
 
     return Positioned(
       left: horizontalInset,
       right: horizontalInset,
-      bottom: (screenHeight - targetRect.top) + gap,
+      top: top,
+      bottom: bottom,
       child: cardContent,
     );
   }
 
-  Widget _buildVideoArea({required double width, required double height}) {
+  Widget _buildVideoArea({required double maxWidth, required double maxHeight}) {
+    final boxSize = _resolveVideoBoxSize(maxWidth, maxHeight);
+
     if (_hasError) {
       return SizedBox(
-        width: width,
-        height: height,
+        width: boxSize.width,
+        height: boxSize.height,
         child: Container(
           alignment: Alignment.center,
           color: Colors.black12,
@@ -326,26 +381,14 @@ class _ProductTourDialogState extends State<ProductTourDialog> {
         ),
       );
     }
-    final videoSize = _controller.value.size;
-    final sizeValid = _isReady && videoSize.width > 0 && videoSize.height > 0;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: SizedBox(
-        width: width,
-        height: height,
-        child: sizeValid
-            ? FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: videoSize.width,
-                  height: videoSize.height,
-                  child: AspectRatio(
-                    aspectRatio: _controller.value.aspectRatio,
-                    child: VideoPlayer(_controller),
-                  ),
-                ),
-              )
+        width: boxSize.width,
+        height: boxSize.height,
+        child: _isReady
+            ? VideoPlayer(_controller)
             : const Center(child: CircularProgressIndicator()),
       ),
     );

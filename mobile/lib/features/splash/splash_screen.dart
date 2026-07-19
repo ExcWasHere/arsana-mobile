@@ -1,8 +1,6 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/services/auth_storage_service.dart';
-import '../../core/widgets/app_background.dart';
 import '../auth/login_screen.dart';
 import '../auth/pin_unlock_screen.dart';
 
@@ -17,9 +15,10 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
+  static const _logoAssetPath = 'assets/images/logo_fix.png';
+
   late final AnimationController _controller;
-  late final Animation<double> _fade;
-  late final Animation<double> _rotation;
+  late final Animation<double> _fadeIn;
   late final AnimationController _exitController;
   late final Animation<double> _exitFade;
 
@@ -28,18 +27,13 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 500),
     );
-    _fade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.2, curve: Curves.easeIn),
-    );
-    _rotation = Tween<double>(begin: 0, end: 2 * math.pi * 2).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    _fadeIn = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+
     _exitController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 500),
     );
     _exitFade = CurvedAnimation(parent: _exitController, curve: Curves.easeInOut);
 
@@ -48,7 +42,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigateNext() async {
-    await Future.delayed(const Duration(milliseconds: 2000 + 400));
+    await Future.delayed(const Duration(milliseconds: 1800));
 
     final hasPin = await AuthStorageService.instance.hasPin();
     if (!mounted) return;
@@ -72,38 +66,19 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      body: AppBackground(
-        child: Center(
-          child: AnimatedBuilder(
-            animation: Listenable.merge([_controller, _exitController]),
-            builder: (context, child) {
-              return Opacity(
-                opacity: _fade.value * (1 - _exitFade.value),
-                child: Transform.rotate(
-                  angle: _rotation.value,
-                  child: Container(
-                    width: 200,
-                    height: 200,
-                    padding: const EdgeInsets.all(28),
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(40),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withOpacity(0.25),
-                          blurRadius: 28,
-                          spreadRadius: 4,
-                        ),
-                      ],
-                    ),
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-              );
-            },
+      body: Center(
+        child: AnimatedBuilder(
+          animation: Listenable.merge([_controller, _exitController]),
+          builder: (context, child) {
+            return Opacity(
+              opacity: _fadeIn.value * (1 - _exitFade.value),
+              child: child,
+            );
+          },
+          child: Image.asset(
+            _logoAssetPath,
+            width: 260,
+            fit: BoxFit.contain,
           ),
         ),
       ),
